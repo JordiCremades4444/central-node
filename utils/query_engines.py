@@ -45,7 +45,7 @@ class QueryEngines:
         """
         try:
             self.shared_input = (
-                "C:/Users/Jordi Cremades/Documents/Repos/credentials.json"
+                "C:/Users/Jordi Cremades/Documents/Repos/central-node/credentials.json"
             )
             self.query = query
             self.params = params  # parameters
