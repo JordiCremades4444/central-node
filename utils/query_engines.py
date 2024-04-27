@@ -11,18 +11,26 @@ import numpy as np
 from sqlalchemy import create_engine
 import mysql.connector
 
+
 class QueryEngines:
-    def __init__(self, query, params=None, output_file=None, load_from_output_file=None, printq=None):
+    def __init__(
+        self,
+        query,
+        params=None,
+        output_file=None,
+        load_from_output_file=None,
+        printq=None,
+    ):
         """
         Description:
         ------------
-        
+
         The init method of this function prepares the query by replacing parameters if needed and preparing the output file.
-        
-        
+
+
         Parameters:
         ------------
-        
+
         query: String
             Query with no formating to be trimmed
         params: Dictionary
@@ -33,29 +41,36 @@ class QueryEngines:
         load_from_output_file: String
             If not null, contains the name of the csv that will be stored
         printq: Int
-            Integer 
+            Integer
         """
         try:
-            self.shared_input = 'C:/Users/Jordi Cremades/Documents/Repository/credentials.json'
+            self.shared_input = (
+                "C:/Users/Jordi Cremades/Documents/Repos/credentials.json"
+            )
             self.query = query
-            self.params = params # parameters
+            self.params = params  # parameters
             self.output_file = output_file
             self.load_from_output_file = load_from_output_file
-            self.output_file_path = (os.path.join(os.getcwd(), 'inputs'))
+            self.output_file_path = os.path.join(os.getcwd(), "inputs")
             if self.output_file:
-                self.output_file_name = (os.path.join(self.output_file_path, 'output_'+output_file+'.csv'))
+                self.output_file_name = os.path.join(
+                    self.output_file_path, "output_" + output_file + ".csv"
+                )
             if self.load_from_output_file:
-                self.load_from_output_file_name = (os.path.join(self.output_file_path, 'output_'+self.load_from_output_file+'.csv'))
+                self.load_from_output_file_name = os.path.join(
+                    self.output_file_path,
+                    "output_" + self.load_from_output_file + ".csv",
+                )
 
             # read credentials
-            with open(self.shared_input, 'r') as f: 
-                self.credentials = json.load(f) 
+            with open(self.shared_input, "r") as f:
+                self.credentials = json.load(f)
             # read query and params replace
-            self.qpath = os.path.join(os.getcwd(), 'queries', self.query)
-            with open(self.qpath, 'r') as f:
+            self.qpath = os.path.join(os.getcwd(), "queries", self.query)
+            with open(self.qpath, "r") as f:
                 self.read_query = f.read()
-            self.tp__read_query = self.replace_params() # read query and replace params
-            if printq: # optional print query
+            self.tp__read_query = self.replace_params()  # read query and replace params
+            if printq:  # optional print query
                 print(self.tp__read_query)
             # if the output will be stored check inputs folder and store
             if self.output_file:
@@ -63,26 +78,26 @@ class QueryEngines:
                     os.mkdir(self.output_file_path)
         except Exception as e:
             print(f"An error occurred: {e}")
- 
+
     def replace_params(self):
         """
         Description:
         ------------
-        
+
         This method replaces the desired path for the query
-        
-        
+
+
         Parameters:
         ------------
-        
+
         query: String
             Query with no formating to be trimmed
         self.params: Dictionary
             Dictionary with parameters to be replaced
-        
+
         Returns:
         ------------
-        
+
         String
             Returns params replaced query
         """
@@ -91,9 +106,11 @@ class QueryEngines:
             # replace parameters
             if self.params:
                 for param in self.params:
-                    param_in_sql = "{" + str(param['name']) + "}"
-                    tp__read_query = tp__read_query.replace(param_in_sql,param['value'])
-            return(tp__read_query)
+                    param_in_sql = "{" + str(param["name"]) + "}"
+                    tp__read_query = tp__read_query.replace(
+                        param_in_sql, param["value"]
+                    )
+            return tp__read_query
         except Exception as e:
             print(f"An error occurred: {e}")
 
@@ -101,40 +118,40 @@ class QueryEngines:
         """
         Description:
         ------------
-        
+
         Runs the query and returns it in a dataframe format.
-        
-        
+
+
         Parameters:
         ------------
-        
+
         self.credential: Dictionary
             Dictionary with credentials
         self.tp__read_query: String
             Parameters replaced query
         self.output_file: String
             Path to output of the query
-        
+
         Returns:
         ------------
-        
+
         pandas.Dataframe
             Returns df containg the query results
         """
         try:
             df = pd.DataFrame()
             # credentials
-            USER = self.credentials['starbust_user']
-            HOST = self.credentials['starbust_host']
-            PORT = self.credentials['starbust_port']
-            
+            USER = self.credentials["starbust_user"]
+            HOST = self.credentials["starbust_host"]
+            PORT = self.credentials["starbust_port"]
+
             # create connection
             conn_details = {
-                'host': HOST,
-                'port': PORT,
-                'user': USER,
-                'http_scheme': 'https',
-                'auth': trino.auth.OAuth2Authentication()
+                "host": HOST,
+                "port": PORT,
+                "user": USER,
+                "http_scheme": "https",
+                "auth": trino.auth.OAuth2Authentication(),
             }
             # load_from_output_file
             if self.load_from_output_file:
@@ -146,48 +163,48 @@ class QueryEngines:
                 # output
                 if self.output_file:
                     df.to_csv(self.output_file_name, index=False)
-            return(df)
+            return df
         except Exception as e:
             print(f"An error occurred: {e}")
-            
+
     def query_run_livedb(self):
         """
         Description:
         ------------
-        
+
         Runs the query and returns it in a dataframe format.
-        
-        
+
+
         Parameters:
         ------------
-        
+
         self.credential: Dictionary
             Dictionary with credentials
         self.tp__read_query: String
             Parameters replaced query
         self.output_file: String
             Path to output of the query
-        
+
         Returns:
         ------------
-        
+
         pandas.Dataframe
             Returns df containg the query results
         """
         try:
             # credentials
-            USER = self.credentials['livedb_user']
-            PW = self.credentials['livedb_pw']
-            HOST = self.credentials['livedb_host']
-            PORT = self.credentials['livedb_port']
-            DB = self.credentials['livedb_database']         
+            USER = self.credentials["livedb_user"]
+            PW = self.credentials["livedb_pw"]
+            HOST = self.credentials["livedb_host"]
+            PORT = self.credentials["livedb_port"]
+            DB = self.credentials["livedb_database"]
             # create connection
             conn_details = {
-                'host': HOST,
-                'port': PORT,
-                'user': USER,
-                'password': PW,
-                'database': DB
+                "host": HOST,
+                "port": PORT,
+                "user": USER,
+                "password": PW,
+                "database": DB,
             }
             # load_from_output_file
             if self.load_from_output_file:
@@ -196,10 +213,10 @@ class QueryEngines:
             else:
                 # Perform the query
                 conn = mysql.connector.connect(**conn_details)
-                cursor = conn.cursor() 
+                cursor = conn.cursor()
                 cursor.execute(self.tp__read_query)
                 query_result = cursor.fetchall()
-                # Fetch Data 
+                # Fetch Data
                 columns_names = [desc[0] for desc in cursor.description]
                 df = pd.DataFrame(query_result, columns=columns_names)
                 # close connection
@@ -208,36 +225,40 @@ class QueryEngines:
                 # output
                 if self.output_file:
                     df.to_csv(self.output_file_name, index=False)
-            return(df)
+            return df
         except Exception as e:
             print(f"An error occurred: {e}")
-           
+
     def lowercasing(self):
         """
         Description:
         ------------
-        
+
         Convert the content of an SQL file to lowercase and save it back.
-        
-        
+
+
         Parameters:
         ------------
-        
+
         sql_file_path: String
             Path to the SQL file to be converted to lowercase.
-        
+
         Returns:
         ------------
-        
+
         Replaced file
-            Replaces the original file lowercasing all the words and with 
+            Replaces the original file lowercasing all the words and with
             the same
         """
         try:
-            with open(self.qpath, 'r') as f: # Read the SQL file
+            with open(self.qpath, "r") as f:  # Read the SQL file
                 sql_content = f.read()
-            lowercase_sql_content = sql_content.lower() # Convert the content to lowercase
-            with open(self.qpath, 'w') as f: # Save the lowercase content back to the file
+            lowercase_sql_content = (
+                sql_content.lower()
+            )  # Convert the content to lowercase
+            with open(
+                self.qpath, "w"
+            ) as f:  # Save the lowercase content back to the file
                 f.write(lowercase_sql_content)
         except Exception as e:
             print(f"An error occurred: {e}")
