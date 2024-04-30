@@ -7,7 +7,7 @@ import shutil
 
 
 class Setup:
-    def __init__(self, main_folder=None, sub_folder=None, params=None):
+    def __init__(self, sub_folder=None, params=None):
         """
         Description:
         ------------
@@ -19,8 +19,6 @@ class Setup:
         Parameters:
         ------------
 
-        main_folder: String
-            Name of the main folder
         sub_folder: String
             Name of the sub_folder
         params: Dictionary
@@ -30,12 +28,9 @@ class Setup:
             # info of current year
             current_year = datetime.datetime.now().year
 
-            self.main_folder = main_folder
             self.sub_folder_raw = sub_folder
-            self.sub_folder = f"{sub_folder}_{current_year}"
-            self.main_folder_path = os.path.join(
-                os.getcwd(), self.main_folder, self.sub_folder
-            )
+            self.sub_folder = f"{current_year}_{sub_folder}"
+            self.main_folder_path = os.path.join(os.getcwd(), "tmp", self.sub_folder)
             self.params = params
         except Exception as e:
             print(f"An error occurred: {e}")
@@ -63,10 +58,8 @@ class Setup:
         try:
             # check if the main_folder/sub_folder combination already exist
             if os.path.exists(rf"{self.main_folder_path}"):
-                print(self.main_folder_path)
                 return False
             else:
-                print(self.main_folder_path)
                 return True  # the project is new
         except Exception as e:
             print(f"An error occurred: {e}")
@@ -104,11 +97,20 @@ class Setup:
                         os.makedirs(value_folder)
 
                 # copy template
-                template = f"knowledge\\templates\\{self.params['version']}.ipynb"
+                template = f"knowledge\\templates\\template.ipynb"
                 source_template = os.path.join(os.getcwd(), template)
                 destination_template = self.main_folder_path
                 shutil.copy(rf"{source_template}", rf"{destination_template}")
+
+                # rename name
+                just_copied_file = os.path.join(
+                    os.getcwd(), self.main_folder_path, "template.ipynb"
+                )
+                new_name_copied_file = os.path.join(
+                    os.getcwd(), self.main_folder_path, self.sub_folder_raw + ".ipynb"
+                )
+                os.rename(just_copied_file, new_name_copied_file)
             else:
-                print("It already exists!")
+                print("It already exists! Nothing was done.")
         except Exception as e:
             print(f"An error occurred: {e}")
