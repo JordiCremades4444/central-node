@@ -97,7 +97,7 @@ class Setup:
                         os.makedirs(value_folder)
 
                 # copy template
-                template = f"knowledge\\templates\\template.ipynb"
+                template = f"utils\\templates\\template.ipynb"
                 source_template = os.path.join(os.getcwd(), template)
                 destination_template = self.main_folder_path
                 shutil.copy(rf"{source_template}", rf"{destination_template}")
