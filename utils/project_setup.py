@@ -27,9 +27,10 @@ class Setup:
         try:
             # info of current year
             current_year = datetime.datetime.now().year
+            current_month = datetime.datetime.now().month
 
             self.sub_folder_raw = sub_folder
-            self.sub_folder = f"{current_year}_{sub_folder}"
+            self.sub_folder = f"{current_year}_{current_month}_{sub_folder}"
             self.main_folder_path = os.path.join(os.getcwd(), "tmp", self.sub_folder)
             self.params = params
         except Exception as e:
