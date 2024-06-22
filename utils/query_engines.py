@@ -326,6 +326,7 @@ class QueryEngines:
         self,
         query_file,
         params_file_name,
+        output_file=False,
         parallelize=False,
         store_steps=False,
         sleep=5,
@@ -339,6 +340,8 @@ class QueryEngines:
             Name of the SQL query file.
         params_file_name: String
             Name to the JSON file containing parameters for each query run.
+        output_file = False
+            If True store the resultinc concatenated df in a separate CSV file in the to_load folder.
         parallelize: Bool, optional
             If True, executes queries concurrently using ThreadPoolExecutor.
         store_steps: Bool, optional
@@ -385,9 +388,11 @@ class QueryEngines:
                 # Store the result if store_steps is True
                 if store_steps:
                     output_file_name = os.path.join(
-                        self.to_load_path, f"query_result_{key}.csv"
+                        self.to_load_path, f"{query_file}_{key}.csv"
                     )
                     df.to_csv(output_file_name, index=False)
+
+                combined_df.to_csv(output_file_name, index=False)
 
                 return df
 
@@ -420,6 +425,13 @@ class QueryEngines:
 
                     # Optional sleep to pace the queries
                     time.sleep(sleep)
+
+            if output_file:
+                output_file_name = os.path.join(
+                    self.to_load_path, f"{query_file}_global.csv"
+                )
+
+                combined_df.to_csv(output_file_name, index=False)
 
             return combined_df
 
