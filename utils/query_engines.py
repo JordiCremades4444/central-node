@@ -16,7 +16,7 @@ from sqlalchemy import create_engine
 
 
 class QueryEngines:
-    def __init__(self):
+    def __init__(self, reset_query_logs=False, reset_to_load=False):
         """
         Initializes the QueryEngines object, setting up credentials and connections.
         """
@@ -33,15 +33,38 @@ class QueryEngines:
             self.to_load_path = os.path.join(os.getcwd(), "to_load")
             self.query_logs_path = os.path.join(os.getcwd(), "query_logs")
 
-            # Ensure output directories exist
-            if not os.path.exists(self.to_load_path):
-                os.mkdir(self.to_load_path)
-
-            if not os.path.exists(self.query_logs_path):
-                os.mkdir(self.query_logs_path)
+            # Ensure output directories exist and handle resetting if required
+            self._ensure_directory(self.to_load_path, reset_to_load)
+            self._ensure_directory(self.query_logs_path, reset_query_logs)
 
         except Exception as e:
             print(f"An error occurred during initialization: {e}")
+
+    ####################################
+    # -- Ensure directory is prepared --#
+    ####################################
+
+    def _ensure_directory(self, path, reset):
+        """
+        Ensures the directory exists and optionally clears its contents.
+
+        Parameters:
+        path (str): Path to the directory.
+        reset (bool): If True, the directory will be emptied.
+        """
+        if not os.path.exists(path):
+            os.mkdir(path)
+        elif reset:
+            # Clear the directory
+            for filename in os.listdir(path):
+                file_path = os.path.join(path, filename)
+                try:
+                    if os.path.isfile(file_path) or os.path.islink(file_path):
+                        os.unlink(file_path)  # Remove the file
+                    elif os.path.isdir(file_path):
+                        shutil.rmtree(file_path)  # Remove the directory
+                except Exception as e:
+                    print(f"Failed to delete {file_path}. Reason: {e}")
 
     ##################################
     # -- Query Preparation Section --#
@@ -392,8 +415,6 @@ class QueryEngines:
                     )
                     df.to_csv(output_file_name, index=False)
 
-                combined_df.to_csv(output_file_name, index=False)
-
                 return df
 
             if parallelize:
@@ -426,14 +447,9 @@ class QueryEngines:
                     # Optional sleep to pace the queries
                     time.sleep(sleep)
 
+            # Save output if specified
             if output_file:
-                output_file_name = os.path.join(
-                    self.to_load_path, f"{query_file}_global.csv"
-                )
-
-                combined_df.to_csv(output_file_name, index=False)
-
-            return combined_df
+                self.save_to_csv(combined_df, output_file)
 
         except Exception as e:
             print(f"An error occurred while running multiple queries: {e}")
