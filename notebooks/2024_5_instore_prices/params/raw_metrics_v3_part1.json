@@ -1,0 +1,68 @@
+{
+    "Mar": [
+        {
+            "name": "start_date",
+            "value": "'2024-03-01'"
+        },
+        {
+            "name": "end_date",
+            "value": "'2024-03-31'"
+        },
+        {
+            "name": "start_date_groups",
+            "value": "'2023-12-01'"
+        },
+        {
+            "name": "end_date_groups",
+            "value": "'2024-06-01'"
+        },
+        {
+            "name": "top",
+            "value": "100"
+        }
+    ],
+    "Apr": [
+        {
+            "name": "start_date",
+            "value": "'2024-04-01'"
+        },
+        {
+            "name": "end_date",
+            "value": "'2024-04-30'"
+        },
+        {
+            "name": "start_date_groups",
+            "value": "'2023-12-01'"
+        },
+        {
+            "name": "end_date_groups",
+            "value": "'2024-06-01'"
+        },
+        {
+            "name": "top",
+            "value": "100"
+        }
+    ],
+    "May": [
+        {
+            "name": "start_date",
+            "value": "'2024-05-01'"
+        },
+        {
+            "name": "end_date",
+            "value": "'2024-05-31'"
+        },
+        {
+            "name": "start_date_groups",
+            "value": "'2023-12-01'"
+        },
+        {
+            "name": "end_date_groups",
+            "value": "'2024-06-01'"
+        },
+        {
+            "name": "top",
+            "value": "100"
+        }
+    ]
+}
