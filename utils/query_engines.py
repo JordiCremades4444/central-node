@@ -451,6 +451,8 @@ class QueryEngines:
             if output_file:
                 self.save_to_csv(combined_df, output_file)
 
+            return combined_df
+
         except Exception as e:
             print(f"An error occurred while running multiple queries: {e}")
             return pd.DataFrame()
