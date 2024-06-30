@@ -18,6 +18,14 @@ with calendar_dates as (select
     where 1=1
 )
 
+,do_not_consider_staff as (
+    select distinct
+        user_id as customer_id
+    from delta.central_users_odp.users_v2
+    where 1=1
+        and user_is_staff
+)
+
 ,top_cities as (
     select
         od.order_city_code,
@@ -28,7 +36,7 @@ with calendar_dates as (select
         on od.store_id = s.store_id
         and s.p_end_date is null
     where 1=1
-        and od.p_creation_date in (select calendar_date from calendar_dates)
+        and od.p_creation_date between date('2024-02-01') and date('2024-05-31')
         and s.store_subvertical2 = 'Groceries'
     group by 1,2
     order by 3 desc
@@ -46,6 +54,7 @@ with calendar_dates as (select
     where 1=1
         and p_first_exposure_date in (select calendar_date from calendar_dates_groups)
         and experiment_toggle_id = 'ZAP_NSW_EXPERIMENT'
+        and allocation_key not in (select customer_id from do_not_consider_staff)
 )
 
 ,order_events_metrics as (
@@ -76,6 +85,7 @@ with calendar_dates as (select
     where 1=1
         and oc.p_creation_date in (select calendar_date from calendar_dates)
         and oc.city in (select order_city_code from top_cities)
+        and oc.customer_id not in (select customer_id from do_not_consider_staff)
     group by 1,2,3,4
 )
 
