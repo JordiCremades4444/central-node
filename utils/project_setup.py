@@ -91,6 +91,11 @@ class Setup:
                 # create main folder
                 os.makedirs(self.main_folder_path)
 
+                # Create the readme.md file in the new directory
+                readme_path = os.path.join(self.main_folder_path, "readme.md")
+                with open(readme_path, "w") as readme_file:
+                    readme_file.write("")
+
                 # create a folder for each true value
                 for key, value in self.params.items():
                     if value == True:  # check if the value is true
