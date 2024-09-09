@@ -12,15 +12,17 @@ select
     'loyalty cards' as project_name
     ,date(creation_date) as p_creation_date
     ,event_name
-    ,custom_attributes__tooltip_type as tooltip_type
-    -- ,'' as custom_attributes_2
-    -- ,'' as custom_attributes_3
+    ,custom_attributes__source as source
+    ,custom_attributes__info_type as infoType
+    ,custom_attributes__screen as screen
     -- ,'' as custom_attributes_4
     -- ,'' as custom_attributes_5
     ,count(distinct event_id) as count_event
+    ,count(distinct custom_attributes__store_id) as count_store_id
 from sensitive_delta.customer_mpcustomer_odp.custom_event 
 where true
     and creation_date in (select calendar_date from calendar_dates)
-    and event_name = 'Tooltip Impression'
-group by 1,2,3,4
+    and event_name = 'Bottom Sheet Shown'
+    and custom_attributes__info_type = 'StoreMembershipDisconnect'
+group by 1,2,3,4,5,6
 order by 1 asc
