@@ -2,10 +2,7 @@ credentials.json
 .venv
 **/__pycache__
 *.csv
-no_version_control**
 tmp/
 to_load/
 query_logs/
-project_planner/
-trackers/
-ouptputs/
+outputs/
