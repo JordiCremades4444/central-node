@@ -1,14 +1,9 @@
-"""Class to extract data from databases
-"""
-
-import concurrent.futures
 import json
 import matplotlib.pyplot as plt
 import mysql.connector
 import numpy as np
 import os
 import pandas as pd
-import time
 import trino
 
 from datetime import datetime
@@ -16,7 +11,7 @@ from sqlalchemy import create_engine
 
 
 class QueryEngines:
-    def __init__(self, reset_query_logs=False, reset_to_load=False):
+    def __init__(self):
         """
         Initializes the QueryEngines object, setting up credentials and connections.
         """
@@ -33,10 +28,6 @@ class QueryEngines:
             self.to_load_path = os.path.join(os.getcwd(), "to_load")
             self.query_logs_path = os.path.join(os.getcwd(), "query_logs")
 
-            # Ensure output directories exist and handle resetting if required
-            self._ensure_directory(self.to_load_path, reset_to_load)
-            self._ensure_directory(self.query_logs_path, reset_query_logs)
-
         except Exception as e:
             print(f"An error occurred during initialization: {e}")
 
@@ -44,27 +35,15 @@ class QueryEngines:
     # -- Ensure directory is prepared --#
     ####################################
 
-    def _ensure_directory(self, path, reset):
+    def _ensure_directory(self, path):
         """
-        Ensures the directory exists and optionally clears its contents.
+        Ensures the directory exists.
 
         Parameters:
         path (str): Path to the directory.
-        reset (bool): If True, the directory will be emptied.
         """
         if not os.path.exists(path):
             os.mkdir(path)
-        elif reset:
-            # Clear the directory
-            for filename in os.listdir(path):
-                file_path = os.path.join(path, filename)
-                try:
-                    if os.path.isfile(file_path) or os.path.islink(file_path):
-                        os.unlink(file_path)  # Remove the file
-                    elif os.path.isdir(file_path):
-                        shutil.rmtree(file_path)  # Remove the directory
-                except Exception as e:
-                    print(f"Failed to delete {file_path}. Reason: {e}")
 
     ##################################
     # -- Query Preparation Section --#
@@ -74,9 +53,11 @@ class QueryEngines:
         self,
         query_file,
         params=None,
+        to_load_file=None,
+        load_from_to_load_file=None,
     ):
         """
-        Prepares the query by replacing parameters if needed.
+        Prepares the query by replacing parameters if needed and handles directory setup.
 
         Parameters:
         ------------
@@ -84,10 +65,20 @@ class QueryEngines:
             Name of the SQL query file.
         params: Dictionary
             Dictionary with parameters to be replaced in the query.
+        to_load_file: String
+            If not null, the name of the CSV to save the query results.
+        load_from_output_file: String
+            If not null, the name of the CSV file to load data from instead of executing the query.
         """
         try:
             self.query_file = query_file
             self.params = params
+            self.to_load_file = to_load_file
+            self.load_from_to_load_file = load_from_to_load_file
+
+            # Ensure directories exist
+            self._ensure_directory(self.to_load_path)
+            self._ensure_directory(self.query_logs_path)
 
             # Read and prepare query
             self.qpath = os.path.join(os.getcwd(), "queries", self.query_file)
@@ -120,23 +111,6 @@ class QueryEngines:
             return tp__read_query
         except Exception as e:
             print(f"An error occurred while replacing parameters: {e}")
-
-    def lowercasing(self):
-        """
-        Converts the content of an SQL file to lowercase and saves it back.
-
-        Returns:
-        ------------
-        None
-        """
-        try:
-            with open(self.qpath, "r") as f:  # Read the SQL file
-                sql_content = f.read()
-            lowercase_sql_content = sql_content.lower()  # Convert to lowercase
-            with open(self.qpath, "w") as f:  # Save the lowercase content
-                f.write(lowercase_sql_content)
-        except Exception as e:
-            print(f"An error occurred while converting to lowercase: {e}")
 
     ##################################
     # -- CSV Handling Section --#
@@ -187,20 +161,9 @@ class QueryEngines:
     # -- Starburst Query Execution Section --#
     ########################################
 
-    def query_run_starburst(
-        self, output_file=None, load_from_output_file=None, print_query=False
-    ):
+    def query_run_starburst(self):
         """
         Runs the query on the Starburst database and returns the result in a DataFrame.
-
-        Parameters:
-        ------------
-        output_file: String
-            If not null, the name of the CSV to save the query results.
-        load_from_output_file: String
-            If not null, the name of the CSV file to load data from instead of executing the query.
-        print_query: Bool
-            If True, logs the query to a file in the query_logs directory.
 
         Returns:
         ------------
@@ -208,11 +171,10 @@ class QueryEngines:
             Returns a DataFrame containing the query results.
         """
         try:
-            if load_from_output_file:
-                return self.load_from_csv(load_from_output_file)
+            if self.load_from_to_load_file:
+                return self.load_from_csv(self.load_from_to_load_file)
 
-            if print_query:  # log the query if specified
-                self.log_query(self.tp__read_query, "starburst")
+            self.log_query(self.tp__read_query, "starburst")
 
             df = pd.DataFrame()
 
@@ -236,8 +198,8 @@ class QueryEngines:
             conn.close()
 
             # Save output if specified
-            if output_file:
-                self.save_to_csv(df, output_file)
+            if self.to_load_file:
+                self.save_to_csv(df, self.to_load_file)
 
             return df
         except Exception as e:
@@ -248,20 +210,9 @@ class QueryEngines:
     # -- MySQL Query Execution Section --#
     ####################################
 
-    def query_run_livedb(
-        self, output_file=None, load_from_output_file=None, print_query=False
-    ):
+    def query_run_livedb(self):
         """
         Runs the query on the LiveDB (MySQL) database and returns the result in a DataFrame.
-
-        Parameters:
-        ------------
-        output_file: String
-            If not null, the name of the CSV to save the query results.
-        load_from_output_file: String
-            If not null, the name of the CSV file to load data from instead of executing the query.
-        print_query: Bool
-            If True, logs the query to a file in the query_logs directory.
 
         Returns:
         ------------
@@ -269,11 +220,10 @@ class QueryEngines:
             Returns a DataFrame containing the query results.
         """
         try:
-            if load_from_output_file:
-                return self.load_from_csv(load_from_output_file)
+            if self.load_from_to_load_file:
+                return self.load_from_csv(self.load_from_to_load_file)
 
-            if print_query:  # log the query if specified
-                self.log_query(self.tp__read_query, "livedb")
+            self.log_query(self.tp__read_query, "livedb")
 
             df = pd.DataFrame()
             # Credentials
@@ -307,8 +257,8 @@ class QueryEngines:
             cursor.close()
 
             # Save output if specified
-            if output_file:
-                self.save_to_csv(df, output_file)
+            if self.to_load_file:
+                self.save_to_csv(df, self.to_load_file)
 
             return df
         except Exception as e:
@@ -340,119 +290,3 @@ class QueryEngines:
                 f.write(query)
         except Exception as e:
             print(f"An error occurred while logging the query: {e}")
-
-    ####################################
-    # -- Multiple Queries --#
-    ####################################
-
-    def multiple_queries(
-        self,
-        query_file,
-        params_file_name,
-        output_file=False,
-        parallelize=False,
-        store_steps=False,
-        sleep=5,
-    ):
-        """
-        Runs multiple queries based on parameters provided in a JSON file using Starburst.
-
-        Parameters:
-        ------------
-        query_file: String
-            Name of the SQL query file.
-        params_file_name: String
-            Name to the JSON file containing parameters for each query run.
-        output_file = False
-            If True store the resultinc concatenated df in a separate CSV file in the to_load folder.
-        parallelize: Bool, optional
-            If True, executes queries concurrently using ThreadPoolExecutor.
-        store_steps: Bool, optional
-            If True, stores the results of each query in a separate CSV file in the to_load folder.
-        sleep: Int, optional
-            Time between parallelizations.
-
-        Returns:
-        ------------
-        pandas.DataFrame
-            Returns a DataFrame containing the combined results of all queries.
-        """
-        try:
-            combined_df = pd.DataFrame()
-
-            params_file_name = params_file_name + ".json"
-            with open(os.path.join("params", params_file_name), "r") as f:
-                params_data = json.load(f)
-
-            total_queries = len(params_data)
-            completed_queries = 0
-
-            def execute_query(key, params_list):
-                nonlocal completed_queries
-                params = [
-                    {"name": param["name"], "value": param["value"]}
-                    for param in params_list
-                ]
-
-                self.prepare_query(query_file=query_file, params=params)
-
-                self.log_query(self.tp__read_query, "multiple_queries")
-
-                df = self.query_run_starburst(
-                    output_file=None, load_from_output_file=None
-                )
-                df["param_label"] = str(key)
-
-                completed_queries += 1
-                progress_percent = int(completed_queries / total_queries * 100)
-
-                print(f"###### SUCCESSFUL RUN {progress_percent}% - Query {key} DONE.")
-
-                # Store the result if store_steps is True
-                if store_steps:
-                    output_file_name = os.path.join(
-                        self.to_load_path, f"{query_file}_{key}.csv"
-                    )
-                    df.to_csv(output_file_name, index=False)
-
-                return df
-
-            if parallelize:
-                # Concurrent execution setup
-                with concurrent.futures.ThreadPoolExecutor() as executor:
-                    futures = []
-                    for key, params_list in params_data.items():
-                        future = executor.submit(execute_query, key, params_list)
-                        futures.append(future)
-
-                        # Optional sleep to stagger submissions
-                        time.sleep(sleep)
-
-                    # Collect results and print completion messages
-                    for future in concurrent.futures.as_completed(futures):
-                        try:
-                            df = future.result()
-                            combined_df = pd.concat(
-                                [combined_df, df], ignore_index=True
-                            )
-                        except Exception as e:
-                            print(f"Error executing query: {e}")
-
-            else:
-                # Sequential execution
-                for key, params_list in params_data.items():
-                    df = execute_query(key, params_list)
-                    combined_df = pd.concat([combined_df, df], ignore_index=True)
-
-                    # Optional sleep to pace the queries
-                    time.sleep(sleep)
-
-            # Save output if specified
-            if output_file:
-                self.save_to_csv(combined_df, output_file)
-
-            return combined_df
-
-        except Exception as e:
-            print(f"An error occurred while running multiple queries: {e}")
-            return pd.DataFrame()
