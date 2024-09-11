@@ -1,0 +1,10 @@
+Currently, the SPM only selects products of the store address universe that
+have a PNA % that goes from [0%,30%].
+
+Then, from this universe, at most the SPM can deactivate up to 10% of the 
+products.
+
+i.e: A store address has 1000 products in the menu and only 80 have PNA ranging
+between 0% and 30%. Then, the SPM can at most deactivate 8 products. 
+
+Which represents --> 0.8%, too little. 
