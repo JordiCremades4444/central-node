@@ -2,7 +2,7 @@ Rules for this repo
 
 1 - Enforce minimalism
 
-2 - Accomplish success from ultiple small simple thigs, do not create complex scripts
+2 - Do not create complex scripts
 
 3 - Mantain folder structure accross all Glovo notebooks, the possible folders are:
 
