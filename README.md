@@ -1,7 +1,9 @@
 Rules for this repo
 
 1 - Enforce minimalism
+
 2 - Accomplish success from ultiple small simple thigs, do not create complex scripts
+
 3 - Mantain folder structure accross all Glovo notebooks, the possible folders are:
 
 outputs: To store outputs of the analysis that will not be consumed by any other script
