@@ -3,6 +3,7 @@ credentials.json
 **/__pycache__
 *.csv
 tmp/
+0_tmp/
 to_load/
 query_logs/
 outputs/
