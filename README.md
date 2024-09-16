@@ -1,8 +1,8 @@
 To create a new project:
 
--simply copy the last project
+- simply copy the last project
 
--change the index
+- change the index
 
 - mantain the (i) queries
   
