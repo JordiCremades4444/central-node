@@ -1,0 +1,1 @@
+To create a new project, simply copy the last project, change the index, and mantain the (i) queries and (ii) outputs folder. The rest are created with its respective classes
