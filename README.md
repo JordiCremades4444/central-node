@@ -4,6 +4,6 @@ To create a new project:
 
 - change the index
 
-- mantain the (i) queries
+- mantain folder queries
   
-- and (ii) outputs folder. 
+- mantain folder outputs
