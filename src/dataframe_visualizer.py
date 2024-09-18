@@ -99,7 +99,6 @@ class DataFrameVisualizer:
         """
         self._validate_columns([x_column, y_column])
         # Handle default color if not provided
-        print([color])
         color = self._get_colors([color], 1)[0]
         plt.figure(figsize=self.fig_size)
         plt.plot(
@@ -111,6 +110,7 @@ class DataFrameVisualizer:
         plt.xlabel(x_column)
         plt.ylabel(y_column)
         plt.title(f"Line Plot of {y_column} vs {x_column}")
+        plt.xticks(rotation=45)
         plt.show()
 
     def multiple_variable_lineplot(self, x_column, y_columns, colors=None):
@@ -139,5 +139,6 @@ class DataFrameVisualizer:
         plt.xlabel(x_column)
         plt.ylabel("Values")
         plt.title(f"Line Plot of {', '.join(y_columns)} vs {x_column}")
+        plt.xticks(rotation=45)
         plt.legend()
         plt.show()
