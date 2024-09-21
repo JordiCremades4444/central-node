@@ -28,7 +28,7 @@ class QueryEngines:
         Initializes the QueryEngines object by loading credentials and setting paths.
         """
         self.shared_input = (
-            "C:/Users/Jordi Cremades/Documents/Repos/central-node/credentials.json"
+            "/Users/jordicremades/Documents/repos/central-node/credentials.json"
         )
         self.to_load_path = os.path.join(os.getcwd(), "to_load")
         self.query_logs_path = os.path.join(os.getcwd(), "query_logs")
