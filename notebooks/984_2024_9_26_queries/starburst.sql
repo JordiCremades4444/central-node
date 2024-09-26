@@ -5,9 +5,9 @@
 with calendar_dates as (select
     calendar_date
     from unnest(sequence(
-    date({XXX}),
-    date({XXX}),
-    interval '1' day
+        date({XXX}),
+        date({XXX}),
+        interval '1' day
     )) as dates (calendar_date)
     where true
 )
