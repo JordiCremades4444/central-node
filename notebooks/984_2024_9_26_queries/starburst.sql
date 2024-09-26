@@ -26,6 +26,7 @@ with calendar_dates as (select
     where true
         and creation_date in (select calendar_date from calendar_dates)
         and event_name = XXX
+        and custom_attributes__store_address_id = XXX
 )
 
 -- =====================================
