@@ -68,3 +68,4 @@ with calendar_dates as (select
         and s.store_subvertical3 = XXX -- Food - Food, Food - Other, Retail, Groceries
         and s.store_subvertical4 = XXX -- Food - Food, Food - Other, Smoking, Health, Retail, Shops
         and contains(et.store_tags, 'Pharmacy OTC') 
+)
