@@ -16,7 +16,7 @@ with calendar_dates as (select
 -- Custom event
 -- =====================================
 
-,custome_event as (
+,custom_event as (
     select
         creation_date,
         cu.creation_time,
