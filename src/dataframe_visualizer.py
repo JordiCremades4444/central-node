@@ -109,7 +109,6 @@ class DataFrameVisualizer:
         )
         plt.xlabel(x_column)
         plt.ylabel(y_column)
-        plt.title(f"Line Plot of {y_column} vs {x_column}")
         plt.xticks(rotation=45)
         plt.show()
 
@@ -138,7 +137,6 @@ class DataFrameVisualizer:
             )
         plt.xlabel(x_column)
         plt.ylabel("Values")
-        plt.title(f"Line Plot of {', '.join(y_columns)} vs {x_column}")
         plt.xticks(rotation=45)
         plt.legend()
         plt.show()
