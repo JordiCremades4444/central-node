@@ -25,8 +25,10 @@ q = query_engines.QueryEngines()
 START_DATE = "'YYYY-MM-DD'"
 END_DATE = "'YYYY-MM-DD'"
 
-cond1 = df['p_creation_date'] >= pd.to_datetime(START_EXPERIMENT)
-cond2 = df['p_creation_date'] <= pd.to_datetime(END_EXPERIMENT)
+df['p_creation_date'] = pd.to_datetime(df['p_creation_date'])
+
+cond1 = df['p_creation_date'] >= pd.to_datetime(START_DATE)
+cond2 = df['p_creation_date'] <= pd.to_datetime(END_DATE)
 
 df = df.fillna(0)
 
