@@ -1,9 +1,5 @@
 To create a new project:
 
-- simply copy the last project
+- manually create a new folder and add the corresponding index
 
-- change the index
-
-- mantain folder queries
-  
-- mantain folder outputs
+- before closing each project, ensure there is no content to be added to python.py or starburst.sql
