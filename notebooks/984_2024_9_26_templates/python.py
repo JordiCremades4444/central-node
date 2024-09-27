@@ -19,7 +19,7 @@ from src import query_engines, dataframe_visualizer
 q = query_engines.QueryEngines()
 
 # =====================================
-# Dataframe visualizer
+# Pivot table
 # =====================================
 
 START_DATE = "'YYYY-MM-DD'"
@@ -30,19 +30,13 @@ df['p_creation_date'] = pd.to_datetime(df['p_creation_date'])
 cond1 = df['p_creation_date'] >= pd.to_datetime(START_DATE)
 cond2 = df['p_creation_date'] <= pd.to_datetime(END_DATE)
 
-df = df.fillna(0)
-
 df_pivoted = df[cond1 & cond2].pivot(index='XXX', columns='XXX', values=['XXX'])
 
 # Flatten the multiindex columns 
 df_pivoted.columns = [f'{col[0]}__{col[1]}' for col in df_pivoted.columns]
 df_pivoted = df_pivoted.reset_index()
 
-v = dataframe_visualizer.DataFrameVisualizer(df_pivoted)
-v.multiple_variable_lineplot(
-    'p_creation_date'
-    ,['XXX','XXX','XXX']
-)
+df_pivoted.fillna(0)
 
 # =====================================
 # Query engined
