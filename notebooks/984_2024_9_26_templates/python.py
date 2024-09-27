@@ -36,7 +36,7 @@ df_pivoted = df[cond1 & cond2].pivot(index='XXX', columns='XXX', values=['XXX'])
 df_pivoted.columns = [f'{col[0]}__{col[1]}' for col in df_pivoted.columns]
 df_pivoted = df_pivoted.reset_index()
 
-df_pivoted.fillna(0)
+df_pivoted = df_pivoted.fillna(0)
 
 # =====================================
 # Query engined
