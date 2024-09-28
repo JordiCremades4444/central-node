@@ -40,7 +40,7 @@ with calendar_dates as (select
         on fe.allocation_key = gc.customer_id
     where true
         and fe.p_first_exposure_date in (select calendar_date from group_calendar_dates)
-        and (fe.experiment_toggle_id = 'ZAP_CATEGORY_LANDING_PAGE' or fe.experiment_toggle_id = 'AP_CATEGORY_LANDING_PAGE_FOR_RETAIL')
+        and (fe.experiment_toggle_id = 'ZAP_CATEGORY_LANDING_PAGE' or fe.experiment_toggle_id = 'ZAP_CATEGORY_LANDING_PAGE_FOR_RETAIL')
 )
 
 select distinct
