@@ -18,15 +18,15 @@ with calendar_dates as (select
 
 ,custom_event as (
     select
-        creation_date,
+        cu.creation_date,
         cu.creation_time,
         cu.dynamic_session_id,
         cu.event_id
-    from sensitive_delta.customer_mpcustomer_odp.custom_event
+    from sensitive_delta.customer_mpcustomer_odp.custom_event cu.
     where true
-        and creation_date in (select calendar_date from calendar_dates)
-        and event_name = XXX
-        and custom_attributes__store_address_id = XXX
+        and cu.creation_date in (select calendar_date from calendar_dates)
+        and cu.event_name = XXX
+        and cu.custom_attributes__store_address_id = XXX
 )
 
 -- =====================================
@@ -35,53 +35,54 @@ with calendar_dates as (select
 
 ,map_category_opened as ( -- cateogy end possibilities are Food, Health, Groceries, Shops, Smoking and Specialties
     select
-        p_creation_date,
-        country,
-        category_id,
-        CASE WHEN category_sub_tag IN ('Smoking', 'Specialties') THEN category_sub_tag ELSE category_tag END AS category
-    from delta.customer_behaviour_odp.enriched_custom_event__category_opened_v3
+        co.p_creation_date,
+        co.country,
+        co.category_id,
+        case when co.category_sub_tag in ('Smoking', 'Specialties') then co.category_sub_tag else co.category_tag end as category
+    from delta.customer_behaviour_odp.enriched_custom_event__category_opened_v3 co
     where 1=1
-        and category_tag in ('Food', 'Health', 'Groceries', 'Shops')
-        and sa.p_creation_date in (select calendar_date from calendar_dates)
-),
+        and co.category_tag in ('Food', 'Health', 'Groceries', 'Shops')
+        and co.p_creation_date in (select calendar_date from calendar_dates)
+)
 
-map_category_group_opened as (-- category end possibilities are Food, Health, Groceries, Shops
+,map_category_group_opened as (-- category end possibilities are Food, Health, Groceries, Shops
     select distinct
-        p_creation_date,
-        country,
-        group_id,
-        category_tag AS category,
-    from delta.customer_behaviour_odp.enriched_custom_event__category_group_opened_v3
+        gco.p_creation_date,
+        gco.country,
+        gco.group_id,
+        gco.category_tag as category,
+    from delta.customer_behaviour_odp.enriched_custom_event__category_group_opened_v3 gco
     where 1=1
-        and category_tag in ('Food', 'Health', 'Groceries', 'Shops')
-        and sa.p_creation_date in (select calendar_date from calendar_dates)
-),
+        and gco.category_tag in ('Food', 'Health', 'Groceries', 'Shops')
+        and gco.p_creation_date in (select calendar_date from calendar_dates)
+)
 
 -- =====================================
 -- Product funnel
 -- =====================================
 
-homes as (
+,homes as (
     select
         h.p_creation_date,
         h.creation_time,
         h.dynamic_session_id,
         h.event_id
     from delta.customer_behaviour_odp.enriched_screen_view__home_v3 h
+    inner join calendar_dates
+        on h.p_creation_date = calendar_dates.calendar_date
     where 1=1
-        and gco.p_creation_date in (select calendar_date from calendar_dates)
 )
 
-group_category_opened as (
+,group_category_opened as (
     select
         gco.p_creation_date,
         gco.creation_time,
         gco.dynamic_session_id,
         gco.event_id
     from delta.customer_behaviour_odp.enriched_custom_event__category_group_opened_v3 gco
+    inner join calendar_dates
+        on gco.p_creation_date = calendar_dates.calendar_date
     where 1=1
-        and gco.p_creation_date in (select calendar_date from calendar_dates)
-)
 
 ,category_opened as (
     select
@@ -90,8 +91,9 @@ group_category_opened as (
         co.dynamic_session_id,
         co.event_id
     from delta.customer_behaviour_odp.enriched_custom_event__category_opened_v3 co
+    inner join calendar_dates
+        on co.p_creation_date = calendar_dates.calendar_date
     where 1=1
-        and co.p_creation_date in (select calendar_date from calendar_dates)
 )
 
 ,store_wall_events AS (
@@ -101,8 +103,17 @@ group_category_opened as (
         sw.dynamic_session_id,
         sw.event_id
     from delta.customer_behaviour_odp.enriched_screen_view__stores_v3 sw
+    inner join calendar_dates
+        on sw.p_creation_date = calendar_dates.calendar_date
+    left join map_category_opened mco
+        on sw.category_id = mco.category_id
+        and sw.p_creation_date = mco.p_creation_date
+        and sw.country = mco.country
+    left join map_category_group_opened mcgo
+        on sw.category_group_id = mcgo.group_id
+        and sw.p_creation_date = mcgo.p_creation_date
+        and sw.country = mcgo.country
     where 1=1
-        and co.p_creation_date in (select calendar_date from calendar_dates)
 )
 
 ,store_accessed as (
@@ -112,8 +123,9 @@ group_category_opened as (
         sa.dynamic_session_id,
         sa.event_id
     from delta.customer_behaviour_odp.enriched_custom_event__store_accessed_v3 sa
+    inner join calendar_dates
+        on sa.p_creation_date = calendar_dates.calendar_date
     where true
-        and sa.p_creation_date in (select calendar_date from calendar_dates)
 )
 
 ,orders_created as (
@@ -123,8 +135,9 @@ group_category_opened as (
         oc.dynamic_session_id,
         oc.event_id
     from delta.customer_behaviour_odp.enriched_custom_event__order_created_v3 oc
+    inner join calendar_dates
+        on oc.p_creation_date = calendar_dates.calendar_date
     where true
-        and oc.p_creation_date in (select calendar_date from calendar_dates)
 )
 
 select 
@@ -197,12 +210,12 @@ with calendar_dates as (select
     left join join delta.central_geography_odp.cities_v2 c
         on s.city_code = c.city_code
     where true
-        and s.p_end_date is null
+        and sa.p_end_date is null
         and s.p_end_date is null
         and et.pend_date is null
         and s.store_vertical = XXX -- Qcommerce, Food
-        and s.store_subvertical2 = XXX -- QCPartners, MFC, Food - Other, Food - Food
-        and s.store_subvertical3 = XXX -- Food - Food, Food - Other, Retail, Groceries
-        and s.store_subvertical4 = XXX -- Food - Food, Food - Other, Smoking, Health, Retail, Shops
+        and s.store_subvertical = XXX -- QCPartners, MFC, Food - Other, Food - Food
+        and s.store_subvertical2 = XXX -- Food - Food, Food - Other, Retail, Groceries
+        and s.store_subvertical3 = XXX -- Food - Food, Food - Other, Smoking, Health, Retail, Shops
         and contains(et.store_tags, 'Pharmacy OTC') 
 )
