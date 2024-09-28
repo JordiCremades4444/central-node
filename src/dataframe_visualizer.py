@@ -88,6 +88,7 @@ class DataFrameVisualizer:
     def one_variable_lineplot(self, x_column, y_column, color=None):
         """
         Creates a line plot for a single y variable against an x variable.
+        If the x_column is a pd.datetime, then the x axis will not be too crowded
 
         Parameters:
             x_column (str): The name of the column to be used for the x-axis.
@@ -115,6 +116,7 @@ class DataFrameVisualizer:
     def multiple_variable_lineplot(self, x_column, y_columns, colors=None):
         """
         Creates a line plot for multiple y variables against an x variable.
+        If the x_column is a pd.datetime, then the x axis will not be too crowded
 
         Parameters:
             x_column (str): The name of the column to be used for the x-axis.
