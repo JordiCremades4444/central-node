@@ -33,6 +33,18 @@ class DataFrameVisualizer:
             "olive": "#bcbd22",
             "cyan": "#17becf",
         }
+        self.styles = {
+            "s1": "-",   # Solid Line
+            "s2": "--",  # Dashed Line
+            "s3": "-.",  # Dash-Dot Line
+            "s4": ":",   # Dotted Line
+            "s5": "- -", # Loose Dashes
+            "s6": "....",# Tightly Dotted Line
+            "s7": "-. -.",# Loose Dash-Dot
+            "s8": "- -", # Double-Dash Line
+            "s9": "-. .",# Dot-Dash Line
+            "s10": "- - -",# Triple-Dash Line
+        }
         self.fig_size = fig_size  # Default figure size
 
     def _validate_columns(self, columns):
@@ -85,6 +97,36 @@ class DataFrameVisualizer:
                 color_list.append(self.colors[color])
         return color_list
 
+    def _get_styles(self, styles, n):
+        """
+        Validates and retrieves line styles for plotting.
+
+        Parameters:
+            styles (list of str or None): A list of style names or None. If None, default styles are used.
+            n (int): The number of styles required.
+
+        Returns:
+            list of str: List of style strings.
+
+        Raises:
+            ValueError: If the number of styles does not match the number of columns or if any style is invalid.
+        """
+        if styles is None:
+            # Use default solid lines if none are provided
+            return [self.styles["s1"]] * n
+        if len(styles) != n:
+            raise ValueError(
+                "The number of styles provided does not match the number of columns."
+            )
+        style_list = []
+        for style in styles:
+            if style not in self.styles:
+                raise ValueError(
+                    f"Style {style} not found. Available styles: {list(self.styles.keys())}"
+                )
+            style_list.append(self.styles[style])
+        return style_list
+    
     def one_variable_lineplot(self, x_column, y_column, color=None):
         """
         Creates a line plot for a single y variable against an x variable.
@@ -113,7 +155,7 @@ class DataFrameVisualizer:
         plt.xticks(rotation=45)
         plt.show()
 
-    def multiple_variable_lineplot(self, x_column, y_columns, colors=None):
+    def multiple_variable_lineplot(self, x_column, y_columns, colors=None, style=None):
         """
         Creates a line plot for multiple y variables against an x variable.
         If the x_column is a pd.datetime, then the x axis will not be too crowded
@@ -122,18 +164,20 @@ class DataFrameVisualizer:
             x_column (str): The name of the column to be used for the x-axis.
             y_columns (list of str): The names of the columns to be used for the y-axis.
             colors (list of str, optional): The colors for the lines. Default is None, which cycles through available colors.
+            style (list of str, optional): The line styles for the plots. Default is solid lines.
 
         Raises:
             ValueError: If the specified x column or y columns are not found in the dataframe or if the colors are invalid.
         """
         self._validate_columns([x_column] + y_columns)
         colors = self._get_colors(colors, len(y_columns))
+        styles = self._get_styles(style, len(y_columns))
         plt.figure(figsize=self.fig_size)
-        for y_column, color in zip(y_columns, colors):
+        for y_column, color, linestyle in zip(y_columns, colors, styles):
             plt.plot(
                 self.dataframe[x_column],
                 self.dataframe[y_column],
-                linestyle="-",
+                linestyle=linestyle,
                 color=color,
                 label=y_column,
             )
