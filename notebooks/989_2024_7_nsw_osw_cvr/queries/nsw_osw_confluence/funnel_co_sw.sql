@@ -141,12 +141,12 @@ from category_opened co
 left join store_wall_events sw
     on co.p_creation_date = sw.p_creation_date
     and co.dynamic_session_id = sw.dynamic_session_id
-    and co.creation_time >= sw.creation_time
+    and co.creation_time =< sw.creation_time
     and co.category = sw.category
 left join orders_created oc
     on co.p_creation_date = oc.p_creation_date
     and co.dynamic_session_id = oc.dynamic_session_id
-    and co.creation_time >= oc.creation_time
+    and co.creation_time =< oc.creation_time
     and co.category = oc.category
 left join customer_exposure ce
     on co.customer_id = ce.customer_id
