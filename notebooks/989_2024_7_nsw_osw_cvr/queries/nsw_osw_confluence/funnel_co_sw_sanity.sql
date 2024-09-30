@@ -24,17 +24,17 @@ with calendar_dates as (select
         u.user_id as customer_id
     from delta.central_users_odp.users_v2 u
     where true
-        and not user_is_staff
-        and not user_is_glovo_employee
-        and user_type = 'Customer'
+        -- and not user_is_staff
+        -- and not user_is_glovo_employee
+        -- and user_type = 'Customer'
 )
 
 ,customer_exposure as (
     select distinct
         fe.allocation_key as customer_id
         ,fe.variant
-        ,date(fe.first_exposure_datetime) as start_date
-        ,coalesce(lag(date(fe.first_exposure_datetime)) over (partition by fe.allocation_key order by date(fe.first_exposure_datetime) desc), date({end_date})) as end_date -- fe.first_exposure_datetime because they could be in the same day
+        ,fe.first_exposure_datetime as start_time
+        ,coalesce(lag(fe.first_exposure_datetime) over (partition by fe.allocation_key order by fe.first_exposure_datetime desc), current_timestamp) as end_time -- fe.first_exposure_datetime because they could be in the same day
     from delta.mlp__experiment_first_exposure__odp.first_exposure fe
     inner join glovo_customers gc
         on fe.allocation_key = gc.customer_id
@@ -43,9 +43,9 @@ with calendar_dates as (select
         and (fe.experiment_toggle_id = 'ZAP_CATEGORY_LANDING_PAGE' or fe.experiment_toggle_id = 'ZAP_CATEGORY_LANDING_PAGE_FOR_RETAIL')
 )
 
--- =====================================
--- Funnel
--- =====================================
+-- -- =====================================
+-- -- Funnel
+-- -- =====================================
 
     ,map_category_opened as ( -- cateogy end possibilities are Food, Health, Groceries, Shops, Smoking and Specialties
         select distinct
@@ -77,6 +77,7 @@ with calendar_dates as (select
     select distinct
         co.p_creation_date,
         co.creation_time,
+        co.event_id,
         co.dynamic_session_id,
         co.customer_id, --need it for variant group
         co.category_tag as category
@@ -91,6 +92,7 @@ with calendar_dates as (select
     select 
         sw.p_creation_date,
         sw.creation_time,
+        sw.event_id,
         sw.dynamic_session_id,
         sw.customer_id, --need it for variant group
         coalesce(mco.category, mcgo.category) as category
@@ -120,6 +122,7 @@ with calendar_dates as (select
     select 
         oc.p_creation_date,
         oc.creation_time,
+        oc.event_id,
         oc.dynamic_session_id,
         s.category
     from delta.customer_behaviour_odp.enriched_custom_event__order_created_v3 oc
@@ -136,7 +139,10 @@ select
     ce.variant,
     count(distinct co.dynamic_session_id) as n_sessions_co,
     count(distinct sw.dynamic_session_id) as n_sessions_sw,
-    count(distinct oc.dynamic_session_id) as n_sessions_oc
+    count(distinct oc.dynamic_session_id) as n_sessions_oc,
+    count(distinct co.event_id) as n_events_co,
+    count(distinct sw.event_id) as n_events_sw,
+    count(distinct oc.event_id) as n_events_oc
 from category_opened co
 left join store_wall_events sw
     on co.p_creation_date = sw.p_creation_date
@@ -150,7 +156,7 @@ left join orders_created oc
     and co.category = oc.category
 left join customer_exposure ce
     on co.customer_id = ce.customer_id
-    and co.p_creation_date between ce.start_date and ce.end_date
+    and co.creation_time between ce.start_time and ce.end_time
 where true
 group by 1,2,3
 order by 1,2
