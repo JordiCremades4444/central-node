@@ -33,8 +33,8 @@ with calendar_dates as (select
     select distinct
         fe.allocation_key as customer_id
         ,fe.variant
-        ,date(fe.first_exposure_datetime) as start_date
-        ,coalesce(lag(date(fe.first_exposure_datetime)) over (partition by fe.allocation_key order by date(fe.first_exposure_datetime) desc), date({end_date})) as end_date
+        ,fe.first_exposure_datetime as start_time
+        ,coalesce(lag(fe.first_exposure_datetime) over (partition by fe.allocation_key order by fe.first_exposure_datetime desc), current_timestamp) as end_time -- fe.first_exposure_datetime because they could be in the same day
     from delta.mlp__experiment_first_exposure__odp.first_exposure fe
     inner join glovo_customers gc
         on fe.allocation_key = gc.customer_id
@@ -125,7 +125,7 @@ select
 from store_wall_events sw
 left join customer_exposure ce
     on sw.customer_id = ce.customer_id
-    and sw.p_creation_date between ce.start_date and ce.end_date
+    and sw.p_creation_date between ce.start_time and ce.end_time
 left join orders_created oc
     on oc.p_creation_date = sw.p_creation_date
     and oc.dynamic_session_id = sw.dynamic_session_id
