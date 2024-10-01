@@ -35,7 +35,7 @@ with calendar_dates as (select
 -- =====================================
 
 ,map_category_opened as ( -- cateogy end possibilities are Food, Health, Groceries, Shops, Smoking and Specialties
-    select
+    select distinct
         co.p_creation_date,
         co.country,
         co.category_id,
