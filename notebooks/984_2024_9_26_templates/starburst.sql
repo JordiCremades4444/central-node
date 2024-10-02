@@ -34,7 +34,7 @@ with calendar_dates as (select
 -- =====================================
 
 ,map_category_opened as ( -- cateogy end possibilities are Food, Health, Groceries, Shops, Smoking and Specialties
-    select
+    select distinct
         co.p_creation_date,
         co.country,
         co.category_id,
@@ -70,7 +70,7 @@ with calendar_dates as (select
     from delta.customer_behaviour_odp.enriched_screen_view__home_v3 h
     inner join calendar_dates
         on h.p_creation_date = calendar_dates.calendar_date
-    where 1=1
+    where true
 )
 
 ,group_category_opened as (
@@ -82,7 +82,7 @@ with calendar_dates as (select
     from delta.customer_behaviour_odp.enriched_custom_event__category_group_opened_v3 gco
     inner join calendar_dates
         on gco.p_creation_date = calendar_dates.calendar_date
-    where 1=1
+    where true
 
 ,category_opened as (
     select
@@ -114,7 +114,7 @@ with calendar_dates as (select
         on sw.category_group_id = mcgo.group_id
         and sw.p_creation_date = mcgo.p_creation_date
         and sw.country = mcgo.country
-    where 1=1
+    where true
 )
 
 ,store_accessed as (
