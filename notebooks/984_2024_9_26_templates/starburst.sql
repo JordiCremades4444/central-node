@@ -22,11 +22,25 @@ with calendar_dates as (select
         cu.creation_time,
         cu.dynamic_session_id,
         cu.event_id
-    from sensitive_delta.customer_mpcustomer_odp.custom_event cu.
+    from sensitive_delta.customer_mpcustomer_odp.custom_event cu
     where true
         and cu.creation_date in (select calendar_date from calendar_dates)
         and cu.event_name = XXX
         and cu.custom_attributes__store_address_id = XXX
+)
+
+-- =====================================
+-- Order level
+-- =====================================
+
+,orders as (
+    select 
+        od.p_creation_date,
+        od.order_id
+    from delta.central_order_descriptors_odp.order_descriptors_v2 od
+    inner join calendar_dates
+        on od.p_creation_date = calendar_dates.calendar_date
+    where true
 )
 
 -- =====================================
