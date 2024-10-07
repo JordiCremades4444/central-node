@@ -84,6 +84,13 @@ df_pivoted = df_pivoted.reset_index()
 df_pivoted = df_pivoted.fillna(0)
 
 # =====================================
+# Prints 
+# =====================================
+pd.set_option('display.max_rows', None) # to print all rows
+
+pd.reset_option('display.max_rows') # reset previous configuration
+
+# =====================================
 # Query engines
 # =====================================
 
