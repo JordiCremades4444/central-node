@@ -129,6 +129,8 @@ class DataFrameVisualizer:
                 self.multiple_variable_lineplot(x_column=x_column, y_columns=y_columns, ax=ax, colors=colors, styles=styles, legend=legend)
             elif plot_type == 'scatterplot':
                 self.multiple_variable_scatterplot(x_column=x_column, y_columns=y_columns, ax=ax, colors=colors, legend=legend)
+            elif plot_type == 'barplot':
+                self.multiple_variable_barplot(x_column=x_column, y_columns=y_columns, ax=ax, colors=colors, legend=legend)
 
         plt.show()
 
@@ -162,8 +164,7 @@ class DataFrameVisualizer:
                 ax.set_ylim(bottom=y_limits[0], top=y_limits[1])
 
             if title:
-                print(title)
-                fig.suptitle(title, fontsize=16, y=0.02)  # y controls position, adjust as necessary
+                fig.text(0.5, 0.95, title, ha='center', fontsize=16)  # Place title at the top of the figure
             
             return fig, ax
 
@@ -181,8 +182,7 @@ class DataFrameVisualizer:
                     ax.set_ylim(bottom=y_limits[0], top=y_limits[1])
 
             if title:
-                print(title)
-                fig.suptitle(title, fontsize=11, y=0)  # y controls position, adjust as necessary
+                fig.text(0.5, 0.95, title, ha='center', fontsize=16)  # Place title at the top of the figure
             
             return fig, axs
    
@@ -229,6 +229,34 @@ class DataFrameVisualizer:
 
         for y_column, color in zip(y_columns, colors):
             ax.scatter(self.dataframe[x_column], self.dataframe[y_column], color=color, label=y_column)
+
+        if legend:
+            ax.legend(loc='best')
+
+    def multiple_variable_barplot(self, x_column, y_columns, ax, colors=None, legend=True, bar_width=0.3):
+        """
+        Creates a bar plot for multiple y variables against an x variable.
+
+        Parameters:
+            x_column (str): Column name for x-axis.
+            y_columns (list of str): List of columns for y-axis.
+            ax (matplotlib.axes.Axes): Axis object to plot on.
+            colors (list, optional): List of colors for each y-column.
+            legend (bool, optional): Whether to show a legend. Defaults to True.
+            bar_width (float, optional): Width of the bars. Defaults to 0.3.
+        """
+        # Validate that columns exist in the dataframe
+        self._validate_columns([x_column] + y_columns)
+        colors = self._get_colors(colors, len(y_columns))
+
+        x_positions = np.arange(len(self.dataframe[x_column]))  # Bar positions
+
+        for i, (y_column, color) in enumerate(zip(y_columns, colors)):
+            ax.bar(x_positions + i * bar_width, self.dataframe[y_column], color=color, width=bar_width, label=y_column)
+
+        # Set x-ticks to be in the center of the grouped bars
+        ax.set_xticks(x_positions + bar_width * (len(y_columns) - 1) / 2)
+        ax.set_xticklabels(self.dataframe[x_column])
 
         if legend:
             ax.legend(loc='best')
