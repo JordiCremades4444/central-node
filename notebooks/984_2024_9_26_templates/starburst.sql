@@ -239,7 +239,7 @@ with calendar_dates as (select
         on sa.store_id = s.store_id
     left join delta.partner_stores_odp.store_entity_tags et
         on sa.store_id = et.store_id
-    left join join delta.central_geography_odp.cities_v2 c
+    left join delta.central_geography_odp.cities_v2 c
         on s.city_code = c.city_code
     where true
         and sa.p_end_date is null
