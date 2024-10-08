@@ -237,7 +237,7 @@ with calendar_dates as (select
     from delta.partner_stores_odp.store_addresses_v2 sa
     left join delta.partner_stores_odp.stores_v2 s
         on sa.store_id = s.store_id
-    left join join delta.partner_stores_odp.store_entity_tags et
+    left join delta.partner_stores_odp.store_entity_tags et
         on sa.store_id = et.store_id
     left join join delta.central_geography_odp.cities_v2 c
         on s.city_code = c.city_code
