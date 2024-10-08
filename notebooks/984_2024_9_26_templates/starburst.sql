@@ -244,7 +244,7 @@ with calendar_dates as (select
     where true
         and sa.p_end_date is null
         and s.p_end_date is null
-        and et.pend_date is null
+        and et.p_end_date is null
         and s.store_vertical = XXX -- Qcommerce, Food
         and s.store_subvertical = XXX -- QCPartners, MFC, Food - Other, Food - Food
         and s.store_subvertical2 = XXX -- Food - Food, Food - Other, Retail, Groceries
