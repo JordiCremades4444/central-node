@@ -8,7 +8,7 @@ with calendar_dates as (select
         date({XXX}),
         date({XXX}),
         interval '1' day
-    )) as dates (calendar_date)
+    )) as cte (calendar_date)
     where true
 )
 
