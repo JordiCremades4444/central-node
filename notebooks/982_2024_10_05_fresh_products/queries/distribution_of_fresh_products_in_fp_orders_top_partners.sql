@@ -46,7 +46,7 @@ with calendar_dates as (select
 , orders_with_fp as (
     select distinct
         bp.order_id as order_id
-    from delta.central__bought_products_looker__odp.bought_products bp
+    from delta.customer_bought_products_odp.bought_products_v2 bp
     inner join calendar_dates cd
         on cd.calendar_date = bp.p_creation_date
     inner join stores s
@@ -54,6 +54,8 @@ with calendar_dates as (select
     inner join delta.mfc_inventory_odp.products_v2 p
         on bp.store_address_id = p.store_address_id
         and bp.product_external_id = p.product_sku
+    where true
+        and p.product_category_level_one in ('Produce','Ready to Consume','Meat / Seafood')
 )
 
 , top_partners as (
@@ -67,7 +69,7 @@ with calendar_dates as (select
             and p.product_category_level_one in ('Produce','Ready to Consume','Meat / Seafood') 
             then concat(cast(bp.order_id as varchar), '_', cast(bp.product_external_id as varchar)) else null end) as n_pairs_orders_fp_external_id_in_fp_orders
 
-    from delta.central__bought_products_looker__odp.bought_products bp
+    from delta.customer_bought_products_odp.bought_products_v2 bp
     inner join calendar_dates cd
         on cd.calendar_date = bp.p_creation_date
     inner join stores s

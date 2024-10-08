@@ -54,7 +54,7 @@ select
     -- MFCs
     count(distinct case when store_subvertical = 'MFC' then bp.order_id else null end) as n_orders_mfc,
     count(distinct case when store_subvertical = 'MFC' and p.product_category_level_one in ('Produce','Ready to Consume','Meat / Seafood') then bp.order_id else null end) as n_orders_containing_fresh_products_mfc
-from delta.central__bought_products_looker__odp.bought_products bp
+from delta.customer_bought_products_odp.bought_products_v2 bp
 inner join calendar_dates cd
     on cd.calendar_date = bp.p_creation_date
 inner join stores s
