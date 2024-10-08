@@ -43,6 +43,26 @@ with calendar_dates as (select
     where true
 )
 
+,pna_orders_info as (
+    select 
+        poi.p_creation_date,
+        poi.order_id
+    from delta.mfc__pna__odp.pna_orders_info poi
+    inner join calendar_dates
+        on poi.p_creation_date = calendar_dates.calendar_date
+    where true
+)
+
+,pna_orders_info as (
+    select 
+        roi.p_creation_date,
+        roi.order_id
+    from delta.central__retention_orders__odp.retention_order_info roi
+    inner join calendar_dates
+        on roi.p_creation_date = calendar_dates.calendar_date
+    where true
+)
+
 -- =====================================
 -- Product category mapping
 -- =====================================
@@ -177,6 +197,30 @@ where true
 group by 1,2,3
 
 -- =====================================
+-- Productl level
+-- =====================================
+
+,bought_products as (
+    select 
+        bp.p_creation_date,
+        bp.bought_product_id
+    from delta.customer_bought_proudcts_odp.bought_products_v2 bp
+    inner join calendar_dates
+        on bp.p_creation_date = calendar_dates.calendar_date
+    where true
+)
+
+,pna_products_info as (
+    select 
+        ppi.p_creation_date,
+        ppi.bought_product_id
+    from delta.mfc__pna__odp.pna_products_info ppi
+    inner join calendar_dates
+        on ppi.p_creation_date = calendar_dates.calendar_date
+    where true
+)
+
+-- =====================================
 -- Product user classification
 -- =====================================
 
@@ -223,6 +267,21 @@ with calendar_dates as (select
     where true
         and fe.p_first_exposure_date in (select calendar_date from group_calendar_dates)
         and (fe.experiment_toggle_id = XXX)
+)
+
+-- =====================================
+-- Sessions
+-- =====================================
+
+,sessions_nc_rc as (
+    select
+        s.p_creation_date,
+        s.dynamic_session_id
+    from delta.mfc__sessions_nc_rc__odp.sessions_nc_rc s
+    inner join calendar_dates
+        on s.p_creation_date = calendar_dates.calendar_date
+    where true
+
 )
 
 -- =====================================
