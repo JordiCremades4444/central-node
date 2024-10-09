@@ -311,7 +311,7 @@ with calendar_dates as (select
 )
 
 -- =====================================
--- Stores
+-- Widgets
 -- =====================================
 
 ,widget_impressions as (
