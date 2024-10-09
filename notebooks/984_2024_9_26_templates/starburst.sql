@@ -288,7 +288,6 @@ with calendar_dates as (select
 -- Stores
 -- =====================================
 
--- stores of a given sub business unit
 ,stores as (
     select distinct
         sa.store_address_id,
@@ -304,9 +303,28 @@ with calendar_dates as (select
         and sa.p_end_date is null
         and s.p_end_date is null
         and et.p_end_date is null
-        and s.store_vertical = XXX -- Qcommerce, Food
+        and s.store_vertical = XXX -- QCommerce, Food
         and s.store_subvertical = XXX -- QCPartners, MFC, Food - Other, Food - Food
         and s.store_subvertical2 = XXX -- Food - Food, Food - Other, Retail, Groceries
         and s.store_subvertical3 = XXX -- Food - Food, Food - Other, Smoking, Health, Retail, Shops
         and contains(et.store_tags, 'Pharmacy OTC') 
+)
+
+-- =====================================
+-- Stores
+-- =====================================
+
+,widget_impressions as (
+    select 
+        w.dynamic_session_id,
+        w.p_creation_date,
+        w.creation_time
+    from delta.customer_behaviour_odp.enriched_custom_event__widget_impression_v3 w
+    inner join calendar_dates cd
+        on cd.calendar_date = w.p_creation_date
+    where true
+        and w.widget_name = 'XXX'
+        and w.widget_id = 'XXX'
+        and w.widget_type = 'XXX'
+        and w.widget_app_location = 'XXX'
 )
