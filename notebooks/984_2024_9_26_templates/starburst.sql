@@ -53,7 +53,7 @@ with calendar_dates as (select
     where true
 )
 
-,pna_orders_info as (
+,retention_orders_info as (
     select 
         roi.p_creation_date,
         roi.order_id
