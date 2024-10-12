@@ -1,0 +1,80 @@
+with calendar_dates as (select
+    calendar_date
+    from unnest(sequence(date({start_date}), date({end_date}), interval '1' day)) as dates (calendar_date)
+    where true
+)
+
+,top_brands_last_snapshot as (
+    select distinct
+        tp.country_code,
+        tp.store_name,
+        tp.p_ingestion_date
+    from delta.mfc__groceries_content_availability_targets__odp.groceries_top_partners tp
+    where true
+        and tp.p_ingestion_date = (select max(p_ingestion_date) from delta.mfc__groceries_content_availability_targets__odp.groceries_top_partners) 
+)
+
+--  pk store_address_id
+,stores as (
+    select 
+        c.country_code, 
+        s.store_name,
+        s.store_subvertical,
+        sa.store_address_id,
+        sa.store_id,
+        case when tp.store_name is not null then true else false end as is_top_partner
+    from delta.partner_stores_odp.store_addresses_v2 sa
+    left join delta.partner_stores_odp.stores_v2 s
+        on sa.store_id = s.store_id
+    left join delta.central_geography_odp.cities_v2 c
+        on s.city_code = c.city_code
+    left join top_brands_last_snapshot tp
+        on tp.store_name = s.store_name
+        and tp.country_code = c.country_code
+    where true
+        and sa.p_end_date is null
+        and s.p_end_date is null
+        and s.store_vertical = 'QCommerce'
+        and s.store_subvertical in ('QCPartners', 'MFC')
+        and s.store_subvertical2 = 'Groceries'
+        and s.store_is_enabled
+        and not (s.store_is_deleted or s.store_is_deleted is null)
+        and not (sa.store_address_is_deleted or sa.store_address_is_deleted is null)
+        and c.country_code not in ('AR','BO','BY','CL','CO','CR','DO','EC','EG','GT','PE','UY','ZA','TR','PR','BR','HN','PA','FR')
+)
+
+select
+    s.country_code,
+    -- all groceries
+        -- not fp
+        count(distinct case when store_subvertical = 'QCPartners' and (not p.product_category_level_one in ('Produce','Ready to Consume','Meat / Seafood')) then bp.order_id else null end) as n_not_fp_orders_all_groceries,
+        count(distinct case when store_subvertical = 'QCPartners' and roi.order_subvertical2_is_ret1 and (not p.product_category_level_one in ('Produce','Ready to Consume','Meat / Seafood')) then bp.order_id else null end) as n_not_fp_orders_ret1_subvertical2_all_groceries,
+        count(distinct case when store_subvertical = 'QCPartners' and roi.store_name_is_ret1 and (not p.product_category_level_one in ('Produce','Ready to Consume','Meat / Seafood')) then bp.order_id else null end) as n_not_fp_orders_ret1_store_name_all_groceries,
+        count(distinct case when store_subvertical = 'QCPartners' and poi.order_is_pna and (not p.product_category_level_one in ('Produce','Ready to Consume','Meat / Seafood')) then bp.order_id else null end) as n_not_fp_orders_pna_all_groceries,
+        count(distinct case when store_subvertical = 'QCPartners' and poi.order_is_pna_wm_feedback and (not p.product_category_level_one in ('Produce','Ready to Consume','Meat / Seafood')) then bp.order_id else null end) as n_not_fp_orders_wm_all_groceries,
+        -- fp
+        count(distinct case when store_subvertical = 'QCPartners' and (p.product_category_level_one in ('Produce','Ready to Consume','Meat / Seafood')) then bp.order_id else null end) as n_fp_orders_all_groceries,
+        count(distinct case when store_subvertical = 'QCPartners' and roi.order_subvertical2_is_ret1 and (p.product_category_level_one in ('Produce','Ready to Consume','Meat / Seafood')) then bp.order_id else null end) as n_fp_orders_ret1_subvertical2_all_groceries,
+        count(distinct case when store_subvertical = 'QCPartners' and roi.store_name_is_ret1 and (p.product_category_level_one in ('Produce','Ready to Consume','Meat / Seafood')) then bp.order_id else null end) as n_fp_orders_ret1_store_name_all_groceries,
+        count(distinct case when store_subvertical = 'QCPartners' and poi.order_is_pna and (p.product_category_level_one in ('Produce','Ready to Consume','Meat / Seafood')) then bp.order_id else null end) as n_fp_orders_pna_all_groceries,
+        count(distinct case when store_subvertical = 'QCPartners' and poi.order_is_pna_wm_feedback and (p.product_category_level_one in ('Produce','Ready to Consume','Meat / Seafood')) then bp.order_id else null end) as n_fp_orders_wm_all_groceries
+        -- -- groceries top partners
+        -- count(distinct case when store_subvertical = 'QCPartners' and is_top_partner then bp.order_id else null end) as n_orders_groceries_top_partners,
+        -- count(distinct case when store_subvertical = 'QCPartners' and is_top_partner and p.product_category_level_one in ('Produce','Ready to Consume','Meat / Seafood') then bp.order_id else null end) as n_orders_containing_fresh_products_groceries_top_partners,
+        -- -- MFCs
+        -- count(distinct case when store_subvertical = 'MFC' then bp.order_id else null end) as n_orders_mfc,
+        -- count(distinct case when store_subvertical = 'MFC' and p.product_category_level_one in ('Produce','Ready to Consume','Meat / Seafood') then bp.order_id else null end) as n_orders_containing_fresh_products_mfc
+from delta.customer_bought_products_odp.bought_products_v2 bp
+inner join calendar_dates cd
+    on cd.calendar_date = bp.p_creation_date
+inner join stores s
+    on s.store_address_id = bp.store_address_id
+left join delta.mfc_inventory_odp.products_v2 p
+    on bp.store_address_id = p.store_address_id
+    and bp.product_external_id = p.product_sku
+left join delta.central__retention_orders__odp.retention_order_info roi
+    on roi.order_id = bp.order_id
+left join delta.mfc__pna__odp.pna_orders_info poi
+    on poi.order_id = bp.order_id
+group by 1
+order by 1,2,3,4
