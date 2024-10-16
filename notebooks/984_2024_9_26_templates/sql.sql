@@ -204,7 +204,7 @@ group by 1,2,3
     select 
         bp.p_creation_date,
         bp.bought_product_id
-    from delta.customer_bought_proudcts_odp.bought_products_v2 bp
+    from delta.customer_bought_products_odp.bought_products_v2 bp
     inner join calendar_dates
         on bp.p_creation_date = calendar_dates.calendar_date
     where true
