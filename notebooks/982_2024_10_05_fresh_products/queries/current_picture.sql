@@ -99,8 +99,8 @@ with calendar_dates as (
     select 
         od.order_country_code as country,
         s.segment,
-        count(distinct bp.product_external_id) as all_products,
-        count(distinct case when p.product_category_level_one in ('Produce','Ready to Consume','Meat / Seafood') then bp.product_external_id else null end) as f_products        
+        count(distinct bp.bought_product_id) as all_products,
+        count(distinct case when p.product_category_level_one in ('Produce','Ready to Consume','Meat / Seafood') then bp.bought_product_id else null end) as f_products        
     from delta.customer_bought_products_odp.bought_products_v2 bp
     inner join calendar_dates
         on bp.p_creation_date = calendar_dates.calendar_date

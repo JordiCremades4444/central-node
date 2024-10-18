@@ -233,7 +233,7 @@ class DataFrameVisualizer:
         if legend:
             ax.legend(loc='best')
 
-    def multiple_variable_barplot(self, x_column, y_columns, ax, colors=None, legend=True, bar_width=0.3):
+    def multiple_variable_barplot(self, x_column, y_columns, ax, colors=None, legend=True, bar_width=0.8):
         """
         Creates a bar plot for multiple y variables against an x variable.
 
@@ -243,7 +243,7 @@ class DataFrameVisualizer:
             ax (matplotlib.axes.Axes): Axis object to plot on.
             colors (list, optional): List of colors for each y-column.
             legend (bool, optional): Whether to show a legend. Defaults to True.
-            bar_width (float, optional): Width of the bars. Defaults to 0.3.
+            bar_width (float, optional): Width of the bars. Defaults to 0.8.
         """
         # Validate that columns exist in the dataframe
         self._validate_columns([x_column] + y_columns)
@@ -251,11 +251,16 @@ class DataFrameVisualizer:
 
         x_positions = np.arange(len(self.dataframe[x_column]))  # Bar positions
 
+        # Calculate individual bar width based on the number of y_columns
+        individual_bar_width = bar_width / len(y_columns)
+
         for i, (y_column, color) in enumerate(zip(y_columns, colors)):
-            ax.bar(x_positions + i * bar_width, self.dataframe[y_column], color=color, width=bar_width, label=y_column)
+            # Shift each column by its index to avoid overlapping, keeping all bars within the bar_width
+            ax.bar(x_positions + i * individual_bar_width - bar_width / 2, self.dataframe[y_column], 
+                color=color, width=individual_bar_width, label=y_column)
 
         # Set x-ticks to be in the center of the grouped bars
-        ax.set_xticks(x_positions + bar_width * (len(y_columns) - 1) / 2)
+        ax.set_xticks(x_positions)
         ax.set_xticklabels(self.dataframe[x_column])
 
         if legend:
