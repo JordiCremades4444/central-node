@@ -69,6 +69,8 @@ with calendar_dates as (
         and p.product_category_level_one in ('Produce', 'Ready to Consume', 'Meat / Seafood')
 )
 
+-- p.product_category_level_one IN ('Produce, 'Meat / Seafood', 'Ready To Consume', 'Bread / Bakery', 'Dairy / Chilled / Eggs')
+
 ,bought_products as (
     select 
         od.order_country_code as country,
