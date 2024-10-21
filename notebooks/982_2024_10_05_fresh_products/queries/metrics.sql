@@ -66,8 +66,8 @@ with calendar_dates as (
         case 
             when s.store_subvertical = 'MFC' then 'MFC'
             when s.store_subvertical = 'QCPartners' and upper(s.store_sub_business_unit) not in ('CONVENIENCE','SUPERMARKET','OTHER') then 'Specialties'
-            when s.store_subvertical = 'QCPartners' and upper(s.store_sub_business_unit) in ('CONVENIENCE','SUPERMARKET','OTHER') and is_top_partner is not null then 'Top Partner'
-            when s.store_subvertical = 'QCPartners' and upper(s.store_sub_business_unit) in ('CONVENIENCE','SUPERMARKET','OTHER') and is_top_partner is null then 'Non Top Partner'
+            when s.store_subvertical = 'QCPartners' and upper(s.store_sub_business_unit) in ('CONVENIENCE','SUPERMARKET','OTHER') and is_top_partner then 'Top Partner'
+            when s.store_subvertical = 'QCPartners' and upper(s.store_sub_business_unit) in ('CONVENIENCE','SUPERMARKET','OTHER') and not is_top_partner then 'Non Top Partner'
         else 'undefined' end as segment_1,
         is_migrated
     from stores s
