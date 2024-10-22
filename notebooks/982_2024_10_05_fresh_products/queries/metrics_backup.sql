@@ -5,6 +5,13 @@ with calendar_dates as (
     where true
 )
 
+,calendar_dates_retention as (
+    select 
+        calendar_date 
+    from unnest(sequence(date({start_date}), date({end_date_retention}), interval '1' day)) as cte (calendar_date)
+    where true
+)
+
 --pk pair country_code, store_name
 ,top_brands_last_snapshot as (
     select distinct
@@ -104,7 +111,7 @@ with calendar_dates as (
     select
         distinct bp.order_id
     from delta.customer_bought_products_odp.bought_products_v2 bp
-    inner join calendar_dates cd -- to later compute retention
+    inner join calendar_dates_retention cd -- to later compute retention
         on bp.p_creation_date = cd.calendar_date
     inner join migrated_stores ms
         on ms.store_address_id = bp.store_address_id
@@ -129,6 +136,34 @@ with calendar_dates as (
     where true
         and partner_rating_evaluation = 'NEGATIVE'
         and contains(r.partner_rating_reasons, 'NOT_FRESH')
+)
+
+--pk order_id
+,f_retention as (select
+        p_creation_date,
+        o.order_id,
+        if(customer_id is not null and store_name is not null,lead(p_creation_date) ignore nulls over(partition by o.customer_id,o.store_name order by o.order_created_at asc),null) as store_name_ret1,
+        lead(p_creation_date) ignore nulls over(partition by o.customer_id,o.order_subvertical3 order by o.order_created_at asc) as order_subvertical3_ret1
+    from delta.central_order_descriptors_odp.order_descriptors_v2 as o
+    inner join calendar_dates_retention cd
+        on cd.calendar_date = o.p_creation_date -- to compute retention
+    inner join migrated_stores ms
+        on ms.store_address_id = o.store_address_id
+    inner join fresh_orders fo
+        on fo.order_id = o.order_id 
+    where 1=1
+        and o.order_final_status = 'DeliveredStatus'
+        and o.order_parent_relationship_type is null
+)
+
+--pk order_id
+,f_retention_enriched as (select 
+        order_id,
+        if(date_diff('day',p_creation_date,store_name_ret1)<=28,true,false) as store_name_is_ret1,
+        if(date_diff('day',p_creation_date,order_subvertical3_ret1)<=28,true,false) as order_subvertical3_is_ret1
+    from f_retention
+    where 1=1
+    order by p_creation_date desc
 )
 
 --the raw table before aggregations is at a bought_product_id level
@@ -165,10 +200,30 @@ with calendar_dates as (
         count(distinct case when roi.order_subvertical3_is_ret1 then bp.order_id else null end) as all_orders_retained_Groceries,
         count(distinct case when roi.order_subvertical3_is_ret1 and fo.order_id is not null then bp.order_id else null end) as f_orders_retained_Groceries,
         count(distinct case when roi.order_subvertical3_is_ret1 and fo.order_id is null then bp.order_id else null end) as nf_orders_retained_Groceries,
+        --retention store_id
+        -- count(distinct case when roi.store_name_is_ret1 then bp.order_id else null end) as all_orders_retained_Store,
+        -- count(distinct case when roi.store_name_is_ret1 and fo.order_id is not null then bp.order_id else null end) as f_orders_retained_Store,
+        -- count(distinct case when roi.store_name_is_ret1 and fo.order_id is null then bp.order_id else null end) as nf_orders_retained_Store,
         --retention Groceries feedbacks
         count(distinct case when roi.order_subvertical3_is_ret1 and f.order_id is not null then bp.order_id else null end) as all_feedback_orders_retained_Groceries,
         count(distinct case when roi.order_subvertical3_is_ret1 and f.order_id is not null and fo.order_id is not null then bp.order_id else null end) as f_feedback_orders_retained_Groceries,
         count(distinct case when roi.order_subvertical3_is_ret1 and f.order_id is not null and fo.order_id is null then bp.order_id else null end) as nf_feedback_orders_retained_Groceries,
+        --retention store_id feedbacks
+        -- count(distinct case when roi.store_name_is_ret1 and f.order_id is not null then bp.order_id else null end) as all_feedback_orders_retained_Store,
+        -- count(distinct case when roi.store_name_is_ret1 and f.order_id is not null and fo.order_id is not null then bp.order_id else null end) as f_feedback_orders_retained_Store,
+        -- count(distinct case when roi.store_name_is_ret1 and f.order_id is not null and fo.order_id is null then bp.order_id else null end) as nf_feedback_orders_retained_Store,
+        --only fresh retention Groceries
+        -- count(distinct case when fre.order_subvertical3_is_ret1 then bp.order_id else null end) as all_orders_fretained_Groceries,
+        count(distinct case when fre.order_subvertical3_is_ret1 and fo.order_id is not null then bp.order_id else null end) as f_orders_fretained_Groceries,
+        -- count(distinct case when fre.order_subvertical3_is_ret1 and fo.order_id is null then bp.order_id else null end) as nf_orders_fretained_Groceries,
+        --only fresh retention Groceries feedbacks
+        -- count(distinct case when fre.order_subvertical3_is_ret1 and f.order_id is not null then bp.order_id else null end) as all_feedback_orders_fretained_Groceries,
+        count(distinct case when fre.order_subvertical3_is_ret1 and f.order_id is not null and fo.order_id is not null then bp.order_id else null end) as f_feedback_orders_fretained_Groceries,
+        -- count(distinct case when fre.order_subvertical3_is_ret1 and f.order_id is not null and fo.order_id is null then bp.order_id else null end) as nf_feedback_orders_fretained_Groceries,
+        --only fresh retention store_id feedbacks
+        -- count(distinct case when fre.store_name_is_ret1 and f.order_id is not null then bp.order_id else null end) as all_feedback_orders_fretained_Store,
+        -- count(distinct case when fre.store_name_is_ret1 and f.order_id is not null and fo.order_id is not null then bp.order_id else null end) as f_feedback_orders_fretained_Store,
+        -- count(distinct case when fre.store_name_is_ret1 and f.order_id is not null and fo.order_id is null then bp.order_id else null end) as nf_feedback_orders_fretained_Store,
         --check
         count(*) as n_rows,
         count(distinct bp.bought_product_id) as n_distinct_bought_product_ids
@@ -189,6 +244,8 @@ with calendar_dates as (
         on fo.order_id = bp.order_id 
     left join feedbacks f
         on f.order_id = bp.order_id
+    left join f_retention_enriched fre
+        on fre.order_id = bp.order_id
     where true
         and od.order_parent_relationship_type is null
         and od.order_final_status = 'DeliveredStatus'
