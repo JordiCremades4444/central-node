@@ -195,7 +195,6 @@ with calendar_dates as (
 --raw table is at an order level
 ,metrics_subsequent_orders as (
     select
-        o.country_code as country,
         o.segment_2,
         --subsequent orders point 0 (so the order we are lookinga at)
         count(distinct case when o.is_fresh_order then o.order_id else null end) as f_subsequent_orders_0,
@@ -225,7 +224,7 @@ with calendar_dates as (
     left join feedbacks f
         on f.order_id = o.order_id
     where true
-    group by 1,2
+    group by 1
 )
 
 select * from metrics_subsequent_orders
