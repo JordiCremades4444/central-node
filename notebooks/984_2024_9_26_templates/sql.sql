@@ -264,8 +264,9 @@ with calendar_dates as (select
     from delta.mlp__experiment_first_exposure__odp.first_exposure fe
     inner join glovo_customers gc
         on fe.allocation_key = gc.customer_id
+    inner join group_calendar_dates gcd
+        on gcd.calendar_date = fe.p_first_exposure_date
     where true
-        and fe.p_first_exposure_date in (select calendar_date from group_calendar_dates)
         and (fe.experiment_toggle_id = XXX)
 )
 
