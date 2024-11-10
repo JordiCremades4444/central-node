@@ -4,11 +4,7 @@
 
 with calendar_dates as (select
     calendar_date
-    from unnest(sequence(
-        date({XXX}),
-        date({XXX}),
-        interval '1' day
-    )) as cte (calendar_date)
+    from unnest(sequence(date({XXX}),date({XXX}),interval '1' day)) as cte (calendar_date)
     where true
 )
 
@@ -23,8 +19,9 @@ with calendar_dates as (select
         cu.dynamic_session_id,
         cu.event_id
     from sensitive_delta.customer_mpcustomer_odp.custom_event cu
+    inner join calendar_dates cd
+        on cd.calendar_date = cu.creation_date
     where true
-        and cu.creation_date in (select calendar_date from calendar_dates)
         and cu.event_name = XXX
         and cu.custom_attributes__store_address_id = XXX
 )
@@ -74,9 +71,10 @@ with calendar_dates as (select
         co.category_id,
         case when co.category_sub_tag in ('Smoking', 'Specialties') then co.category_sub_tag else co.category_tag end as category
     from delta.customer_behaviour_odp.enriched_custom_event__category_opened_v3 co
-    where 1=1
+    inner join calendar_dates cd
+        on cd.calendar_date = co.p_creation_date
+    where true
         and co.category_tag in ('Food', 'Health', 'Groceries', 'Shops')
-        and co.p_creation_date in (select calendar_date from calendar_dates)
 )
 
 ,map_category_group_opened as (-- category end possibilities are Food, Health, Groceries, Shops
@@ -84,9 +82,11 @@ with calendar_dates as (select
         gco.p_creation_date,
         gco.country,
         gco.group_id,
-        gco.category_tag as category,
+        gco.category_tag as category
     from delta.customer_behaviour_odp.enriched_custom_event__category_group_opened_v3 gco
-    where 1=1
+    inner join calendar_dates cd
+        on cd.calendar_date = gco.p_creation_date
+    where true
         and gco.category_tag in ('Food', 'Health', 'Groceries', 'Shops')
         and gco.p_creation_date in (select calendar_date from calendar_dates)
 )
@@ -117,6 +117,7 @@ with calendar_dates as (select
     inner join calendar_dates
         on gco.p_creation_date = calendar_dates.calendar_date
     where true
+)
 
 ,category_opened as (
     select
@@ -127,7 +128,7 @@ with calendar_dates as (select
     from delta.customer_behaviour_odp.enriched_custom_event__category_opened_v3 co
     inner join calendar_dates
         on co.p_creation_date = calendar_dates.calendar_date
-    where 1=1
+    where true
 )
 
 ,store_wall_events AS (
@@ -226,22 +227,14 @@ group by 1,2,3
 
 with calendar_dates as (select
     calendar_date
-    from unnest(sequence(
-        date({start_date}),
-        date({end_date}),
-        interval '1' day
-    )) as dates (calendar_date)
+    from unnest(sequence(date({start_date}),date({end_date}),interval '1' day)) as dates (calendar_date)
     where true
 )
 
 ,group_calendar_dates as (
     select
         calendar_date
-    from unnest(sequence(
-        date_add('day', -{days_between_start_date_and_first_exposure}, date({start_date})),
-        date({end_date}),
-        interval '1' day
-    )) as dates (calendar_date)
+    from unnest(sequence(date_add('day', -{days_between_start_date_and_first_exposure}, date({start_date})),date({end_date}),interval '1' day)) as dates (calendar_date)
     where true
 )
 
@@ -282,7 +275,6 @@ with calendar_dates as (select
     inner join calendar_dates
         on s.p_creation_date = calendar_dates.calendar_date
     where true
-
 )
 
 -- =====================================
