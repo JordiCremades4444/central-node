@@ -88,7 +88,6 @@ with calendar_dates as (select
         on cd.calendar_date = gco.p_creation_date
     where true
         and gco.category_tag in ('Food', 'Health', 'Groceries', 'Shops')
-        and gco.p_creation_date in (select calendar_date from calendar_dates)
 )
 
 -- =====================================
