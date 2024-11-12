@@ -303,6 +303,19 @@ with calendar_dates as (select
 )
 
 -- =====================================
+-- Top Partners
+-- =====================================
+
+,top_groceries_partners as (
+    select distinct
+        country_code,
+        store_name
+    from delta.mfc__groceries_content_availability_targets__odp.groceries_top_partners
+    where true
+        and p_ingestion_date = (select max(p_ingestion_date) from delta.mfc__groceries_content_availability_targets__odp.groceries_top_partners)
+)
+
+-- =====================================
 -- Widgets
 -- =====================================
 
