@@ -94,6 +94,7 @@ pd.reset_option('display.max_rows') # reset previous configuration
 # Query engines
 # =====================================
 
+QUERY = 'XXX' # Without .sql added
 START_DATE = "'YYYY-MM-DD'"
 END_DATE = "'YYYY-MM-DD'"
 
