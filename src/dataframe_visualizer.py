@@ -87,9 +87,9 @@ class DataFrameVisualizer:
                                             - x_rotation (int): Rotation angle for x-axis labels (default: 45).
                                             - x_limit (tuple): Tuple of (x_min, x_max) for x-axis limits.
                                             - y_limit (tuple): Tuple of (y_min, y_max) for y-axis limits.
-            plot_params (list of dict, optional): A list of dictionaries, where each dictionary contains
+            plot_params (list of dict): A list of dictionaries, where each dictionary contains
                                                 parameters for each subplot, including:
-                                                - plot_type (str): Type of plot ('lineplot' or 'scatterplot').
+                                                - plot_type (str): Type of plot.
                                                 - x_column (str): The x-axis column.
                                                 - y_columns (list of str): List of y-axis columns.
                                                 - colors (list of str, optional): List of colors for the plot.
