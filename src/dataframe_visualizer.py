@@ -123,6 +123,7 @@ class DataFrameVisualizer:
             colors = config.get('colors', None)
             styles = config.get('styles', None)
             legend = config.get('legend')
+            bar_width = config.get('bar_width', None)
 
             # Call static plotting method
             if plot_type == 'lineplot':
@@ -130,7 +131,7 @@ class DataFrameVisualizer:
             elif plot_type == 'scatterplot':
                 self.multiple_variable_scatterplot(x_column=x_column, y_columns=y_columns, ax=ax, colors=colors, legend=legend)
             elif plot_type == 'barplot':
-                self.multiple_variable_barplot(x_column=x_column, y_columns=y_columns, ax=ax, colors=colors, legend=legend)
+                self.multiple_variable_barplot(x_column=x_column, y_columns=y_columns, ax=ax, colors=colors, legend=legend, bar_width=bar_width)
 
         plt.show()
 
@@ -249,19 +250,25 @@ class DataFrameVisualizer:
         self._validate_columns([x_column] + y_columns)
         colors = self._get_colors(colors, len(y_columns))
 
-        x_positions = np.arange(len(self.dataframe[x_column]))  # Bar positions
-
-        # Calculate individual bar width based on the number of y_columns
-        individual_bar_width = bar_width / len(y_columns)
+        n_bars = len(y_columns)
+        x_positions = np.arange(len(self.dataframe[x_column]))  # Group positions
+        individual_bar_width = bar_width / n_bars  # Width of each bar
 
         for i, (y_column, color) in enumerate(zip(y_columns, colors)):
-            # Shift each column by its index to avoid overlapping, keeping all bars within the bar_width
-            ax.bar(x_positions + i * individual_bar_width - bar_width / 2, self.dataframe[y_column], 
-                color=color, width=individual_bar_width, label=y_column)
+            # Position each bar within its group
+            bar_positions = x_positions + (i - (n_bars - 1) / 2) * individual_bar_width
+            ax.bar(
+                bar_positions,
+                self.dataframe[y_column],
+                color=color,
+                width=individual_bar_width,
+                label=y_column,
+            )
 
-        # Set x-ticks to be in the center of the grouped bars
+        # Set x-ticks to the center of each group of bars
         ax.set_xticks(x_positions)
-        ax.set_xticklabels(self.dataframe[x_column])
+        ax.set_xticklabels(self.dataframe[x_column], ha='center')
 
+        # Optionally add a legend
         if legend:
             ax.legend(loc='best')
