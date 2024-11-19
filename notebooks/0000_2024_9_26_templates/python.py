@@ -23,44 +23,51 @@ q = query_engines.QueryEngines()
 # =====================================
 
 # Create an instance of DataFrameVisualizer
-visualizer = dataframe_visualizer.DataFrameVisualizer(df)
+v = dataframe_visualizer.DataFrameVisualizer(df)
 
 # Define the plot configurations for each subplot
-plot_configs = [
+plot_params = [
     {
-        'plot_type': 'lineplot',
-        'x_column': 'XXX',
+        'plot_type': 'lineplot', 
+        'x_column': 'XXX', 
         'y_columns': ['XXX', 'XXX'],
-        'colors': ['blue', 'orange'],
-        'styles': [':','-']
+        'colors': ['blue', 'orange'], # default None
+        'styles': [':','-'], # default None
+        'legend': True # default True
     },
     {
         'plot_type': 'scatterplot',
         'x_column': 'XXX',
         'y_columns': ['XXX', 'XXX'],
-        'colors': ['blue', 'orange'],
+        'colors': ['blue', 'orange'], # default None
+        'legend': True # default True
+    },
+    {
+        'plot_type': 'barplot',
+        'x_column': 'XXX',
+        'y_columns': ['XXX', 'XXX'],
+        'colors': ['blue', 'orange'], # default None
+        'legend': True, # default True
+        'bar_width': 0.8 # default 0.8
     },
 ]
 
 figure_params = {
-    'n_plots': 2,
-    'fig_length': 12,
-    'fig_height': 6,
-    'x_min': 0,
-    'x_max': 0,
-    'y_min': 0,
-    'y_max': 0,
-    'x_rotation': 45,
-    'share_x': True,
-    'share_y': False
+    'n_plots': 1, # default 1
+    'fig_length': 12, # default 10
+    'fig_height': 6, # default 6
+    'x_rotation': 45, # default 45
+    'share_x': True, # default False
+    'share_y': False, # default False
+    'x_limits': None, # default None
+    'y_limits': None, # default None
+    'title': 'XXX' # default None
 }
 
-
 # Call the plot method to handle the entire flow
-visualizer.plot(
-    method='static', 
+v.plot(
     figure_params=figure_params,
-    plot_configs=plot_configs
+    plot_params=plot_params
 )
 
 # =====================================
