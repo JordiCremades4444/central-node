@@ -1,5 +1,5 @@
 # =====================================
-# 0 - Configuration
+# Configuration
 # =====================================
 
 import matplotlib.pyplot as plt
@@ -19,7 +19,7 @@ from src import query_engines, dataframe_visualizer
 q = query_engines.QueryEngines()
 
 # =====================================
-# 0 - Plots
+# Plots
 # =====================================
 
 # Create an instance of DataFrameVisualizer
