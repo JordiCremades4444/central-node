@@ -41,6 +41,24 @@ class DataFrameVisualizer:
         if missing_cols:
             raise ValueError(f"Columns {missing_cols} not found in the dataframe.")
 
+    def _get_bar_width(self, bar_width):
+        """
+        Validates and retrieves the bar width for plotting.
+
+        Parameters:
+            bar_width (float or None): The width of the bars. If None, defaults to 0.8.
+
+        Returns:
+            float: The bar width to use.
+        """
+        if bar_width is None:
+            return 0.8
+        if not isinstance(bar_width, (int, float)):
+            raise ValueError("bar_width must be a number (int or float).")
+        if bar_width <= 0:
+            raise ValueError("bar_width must be greater than 0.")
+        return bar_width
+
     def _get_colors(self, colors, n):
         """
         Validates and retrieves colors for plotting.
@@ -234,7 +252,7 @@ class DataFrameVisualizer:
         if legend:
             ax.legend(loc='best')
 
-    def multiple_variable_barplot(self, x_column, y_columns, ax, colors=None, legend=True, bar_width=0.8):
+    def multiple_variable_barplot(self, x_column, y_columns, ax, colors=None, legend=True, bar_width=None):
         """
         Creates a bar plot for multiple y variables against an x variable.
 
@@ -249,6 +267,7 @@ class DataFrameVisualizer:
         # Validate that columns exist in the dataframe
         self._validate_columns([x_column] + y_columns)
         colors = self._get_colors(colors, len(y_columns))
+        bar_width = self._get_bar_width(bar_width)
 
         n_bars = len(y_columns)
         x_positions = np.arange(len(self.dataframe[x_column]))  # Group positions
@@ -272,3 +291,5 @@ class DataFrameVisualizer:
         # Optionally add a legend
         if legend:
             ax.legend(loc='best')
+
+
