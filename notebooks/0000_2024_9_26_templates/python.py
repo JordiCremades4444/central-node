@@ -101,7 +101,7 @@ pd.reset_option('display.max_rows') # reset previous configuration
 # Query engines
 # =====================================
 
-QUERY = 'XXX' # Without .sql added
+QUERY_NAME = 'XXX' # With sql
 START_DATE = "'YYYY-MM-DD'"
 END_DATE = "'YYYY-MM-DD'"
 
@@ -111,9 +111,9 @@ params = [
 ]
 
 q.prepare_query(
-    'XXX.sql'
+    QUERY_NAME
     ,params=params
-    ,to_load_file=None
+    ,to_load_file=QUERY_NAME
     ,load_from_to_load_file=None
     
 )
