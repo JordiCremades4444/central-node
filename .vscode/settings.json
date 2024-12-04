@@ -1,0 +1,8 @@
+{
+    "python.defaultInterpreterPath": "/Users/jordicremades/Documents/repos/central-node/venvs/venv_general/.venv/bin/python",
+    "terminal.integrated.env.osx": {
+        "VIRTUAL_ENV": "/Users/jordicremades/Documents/repos/central-node/venvs/venv_general/.venv",
+        "PATH": "/Users/jordicremades/Documents/repos/central-node/venvs/venv_general/.venv/bin:${env:PATH}"
+    },
+    "python.terminal.activateEnvironment": true
+}
