@@ -64,6 +64,7 @@ with calendar_dates as (
     where true
         and not (cardinality(promotion_ids) = 1 and contains(promotion_ids, -1)) --exclude the promotion_id -1 if appears alone
         and promotion_ids is not null
+        and (contains(promotion_types,'PERCENTAGE_DISCOUNT') or contains(promotion_types,'TWO_FOR_ONE') or contains(promotion_types,'FLAT_PRODUCT'))
 )
 
 ,fixed_exposures as (
@@ -81,8 +82,24 @@ with calendar_dates as (
     select
         od.customer_id,
         count(distinct od.order_id) as groceries_delivered_orders,
+        sum(coalesce(od.order_total_purchase_eur,0)) as groceries_total_gmv
+    from delta.central_order_descriptors_odp.order_descriptors_v2 as od
+    inner join calendar_dates 
+        on calendar_dates.calendar_date = od.p_creation_date
+    inner join fixed_exposures fe
+        on fe.customer_id = od.customer_id
+        and od.p_creation_date >= fe.first_exposure_at
+    where true  
+        and od.order_subvertical2 = 'Groceries'
+        and od.order_final_status = 'DeliveredStatus'
+    group by 1
+)
+
+,order_discounts_metrics as (
+    select
+        od.customer_id,
+        count(distinct od.order_id) as check_groceries_delivered_orders,
         count(distinct pd.order_id) as groceries_delivered_orders_with_discounts,
-        sum(coalesce(od.order_total_purchase_eur,0)) as groceries_total_gmv,
         sum(coalesce(total_discounts_eur,0)) as groceries_discounted_gmv
     from delta.central_order_descriptors_odp.order_descriptors_v2 as od
     inner join calendar_dates 
@@ -104,12 +121,16 @@ select
     fe.customer_id,
     fe.variant,
     fe.first_exposure_at,
-    --metrics
+    -- order_metrics
     coalesce(om.groceries_delivered_orders,0) as groceries_delivered_orders,
-    coalesce(om.groceries_delivered_orders_with_discounts,0) as groceries_delivered_orders_with_discounts,
     coalesce(om.groceries_total_gmv,0) as groceries_total_gmv,
-    coalesce(om.groceries_discounted_gmv,0) as groceries_discounted_gmv
+    -- order_discounts_metrics
+    coalesce(odm.check_groceries_delivered_orders,0) as check_groceries_delivered_orders,
+    coalesce(odm.groceries_delivered_orders_with_discounts,0) as groceries_delivered_orders_with_discounts,
+    coalesce(odm.groceries_discounted_gmv,0) as groceries_discounted_gmv
 from fixed_exposures fe
 left join order_metrics om
     on fe.customer_id = om.customer_id
+left join order_discounts_metrics odm
+    on fe.customer_id = odm.customer_id
 where true

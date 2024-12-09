@@ -13,6 +13,6 @@ from delta.mlp__experiment_first_exposure__odp.first_exposure as e
 inner join calendar_dates cd
     on cd.calendar_date = e.p_first_exposure_date
 where true
-    and experiment_toggle_id in ('ZAP_SURFACING_PROMOS','SONIC_SURFACING_PROMOS_INLINECAROUSEL',' SONIC_SURFACING_PROMOS_ENTRY_POINTS_')
+    and experiment_toggle_id in ('ZAP_SURFACING_PROMOS','SONIC_SURFACING_PROMOS_INLINECAROUSEL','SONIC_SURFACING_PROMOS_ENTRY_POINTS_')
 group by 1,2
 order by 1,2,3 asc
