@@ -78,6 +78,24 @@ with calendar_dates as (
     group by 1,2
 )
 
+-- =====================================
+-- Metrics
+-- =====================================
+
+,store_addresses_that_showed_promos as (
+    select distinct
+        sa.store_address_id
+    from delta.customer_behaviour_odp.enriched_custom_event__store_accessed_v3 AS sa
+    inner join calendar_dates cd
+        on cd.calendar_date = sa.p_creation_date
+    inner join stores s
+        on s.store_id = sa.store_id
+    where true
+        and not (cardinality(promotion_ids) = 1 and contains(promotion_ids, -1)) --exclude the promotion_id -1 if appears alone
+        and promotion_ids is not null
+        and (contains(promotion_types,'PERCENTAGE_DISCOUNT') or contains(promotion_types,'TWO_FOR_ONE') or contains(promotion_types,'FLAT_PRODUCT'))
+)
+
 ,order_metrics as (
     select
         od.customer_id,
@@ -89,6 +107,8 @@ with calendar_dates as (
     inner join fixed_exposures fe
         on fe.customer_id = od.customer_id
         and od.p_creation_date >= fe.first_exposure_at
+    inner join store_addresses_that_showed_promos
+        on store_addresses_that_showed_promos.store_address_id = od.store_address_id
     where true  
         and od.order_subvertical2 = 'Groceries'
         and od.order_final_status = 'DeliveredStatus'
@@ -99,18 +119,19 @@ with calendar_dates as (
     select
         od.customer_id,
         count(distinct od.order_id) as check_groceries_delivered_orders,
-        count(distinct pd.order_id) as groceries_delivered_orders_with_discounts,
-        sum(coalesce(total_discounts_eur,0)) as groceries_discounted_gmv
+        count(distinct pp.order_id) as groceries_delivered_orders_with_discounts,
+        sum(coalesce(product_gmv_after_discounts,0)) as groceries_gmv_from_discounted_products
     from delta.central_order_descriptors_odp.order_descriptors_v2 as od
     inner join calendar_dates 
         on calendar_dates.calendar_date = od.p_creation_date
     inner join fixed_exposures fe
         on fe.customer_id = od.customer_id
         and od.p_creation_date >= fe.first_exposure_at
-    left join delta.growth_pricing_discounts_odp.pricing_discounts as pd
-        on pd.order_id = od.order_id 
-        and pd.discount_type = 'PROMOTOOL'
-        and pd.partner_promotion_id is not null
+    inner join store_addresses_that_showed_promos
+        on store_addresses_that_showed_promos.store_address_id = od.store_address_id
+    left join delta.mfc__pricing_promotions__odp.pricing_promotions as pp
+        on pp.order_id = od.order_id 
+        and pp.product_is_promoted
     where true  
         and od.order_subvertical2 = 'Groceries'
         and od.order_final_status = 'DeliveredStatus'
@@ -127,7 +148,7 @@ select
     -- order_discounts_metrics
     coalesce(odm.check_groceries_delivered_orders,0) as check_groceries_delivered_orders,
     coalesce(odm.groceries_delivered_orders_with_discounts,0) as groceries_delivered_orders_with_discounts,
-    coalesce(odm.groceries_discounted_gmv,0) as groceries_discounted_gmv
+    coalesce(odm.groceries_gmv_from_discounted_products,0) as groceries_gmv_from_discounted_products
 from fixed_exposures fe
 left join order_metrics om
     on fe.customer_id = om.customer_id

@@ -78,6 +78,24 @@ with calendar_dates as (
     group by 1,2
 )
 
+-- =====================================
+-- Metrics
+-- =====================================
+
+,store_addresses_that_showed_promos as (
+    select distinct
+        sa.store_address_id
+    from delta.customer_behaviour_odp.enriched_custom_event__store_accessed_v3 AS sa
+    inner join calendar_dates cd
+        on cd.calendar_date = sa.p_creation_date
+    inner join stores s
+        on s.store_id = sa.store_id
+    where true
+        and not (cardinality(promotion_ids) = 1 and contains(promotion_ids, -1)) --exclude the promotion_id -1 if appears alone
+        and promotion_ids is not null
+        and (contains(promotion_types,'PERCENTAGE_DISCOUNT') or contains(promotion_types,'TWO_FOR_ONE') or contains(promotion_types,'FLAT_PRODUCT'))
+)
+
 ,banner_impression__shoppable as (
     select
         bi.customer_id,
@@ -88,6 +106,8 @@ with calendar_dates as (
         on bi.p_creation_date = calendar_dates.calendar_date
     inner join stores
         on stores.store_address_id = bi.store_address_id
+    inner join store_addresses_that_showed_promos
+        on store_addresses_that_showed_promos.store_address_id = bi.store_address_id
     inner join fixed_exposures fe
         on fe.customer_id = bi.customer_id
         and bi.p_creation_date >= fe.first_exposure_at
@@ -122,6 +142,8 @@ with calendar_dates as (
         on co.p_creation_date = calendar_dates.calendar_date
     inner join stores
         on stores.store_address_id = co.store_address_id
+    inner join store_addresses_that_showed_promos
+        on store_addresses_that_showed_promos.store_address_id = co.store_address_id
     inner join fixed_exposures fe
         on fe.customer_id = co.customer_id
         and co.p_creation_date >= fe.first_exposure_at
@@ -139,6 +161,8 @@ with calendar_dates as (
         on cd.calendar_date = sa.p_creation_date
     inner join stores
         on stores.store_address_id = sa.store_address_id
+    inner join store_addresses_that_showed_promos
+        on store_addresses_that_showed_promos.store_address_id = sa.store_address_id
     inner join fixed_exposures fe
         on fe.customer_id = sa.customer_id
         and sa.p_creation_date >= fe.first_exposure_at
