@@ -82,7 +82,7 @@ df['p_creation_date'] = pd.to_datetime(df['p_creation_date'])
 cond1 = df['p_creation_date'] >= pd.to_datetime(START_DATE)
 cond2 = df['p_creation_date'] <= pd.to_datetime(END_DATE)
 
-df_pivoted = df[cond1 & cond2].pivot(index='XXX', columns='XXX', values=['XXX'])
+df_pivoted = df[cond1 & cond2].pivot_table(index=['XXX'], columns=['XXX'], values=['XXX'], aggfunc=['sum'])
 
 # Flatten the multiindex columns 
 df_pivoted.columns = [f'{col[0]}__{col[1]}' for col in df_pivoted.columns]
