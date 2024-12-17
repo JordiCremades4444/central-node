@@ -1,5 +1,4 @@
 import matplotlib.pyplot as plt
-from matplotlib.animation import FuncAnimation, PillowWriter
 import numpy as np
 
 class DataFrameVisualizer:
