@@ -18,12 +18,21 @@ class DataFrameVisualizer:
         """
         self.dataframe = dataframe
         self.colors = {
-            "blue": "#1f77b4", "orange": "#ff7f0e", "green": "#2ca02c", "red": "#d62728",
-            "purple": "#9467bd", "brown": "#8c564b", "pink": "#e377c2", "gray": "#7f7f7f",
-            "olive": "#bcbd22", "cyan": "#17becf"
+            "blue": "#1f77b4", 
+            "orange": "#ff7f0e", 
+            "green": "#2ca02c", 
+            "red": "#d62728",
+            "purple": "#9467bd", 
+            "brown": "#8c564b", 
+            "pink": "#e377c2", 
+            "gray": "#7f7f7f",
+            "olive": "#bcbd22", 
+            "cyan": "#17becf"
         }
         self.styles = {
-            "-": "-", "--": "--", ":": ":"
+            "-": "-", 
+            "--": "--", 
+            ":": ":"
         }
 
     def _validate_columns(self, columns):
@@ -57,6 +66,24 @@ class DataFrameVisualizer:
         if bar_width <= 0:
             raise ValueError("bar_width must be greater than 0.")
         return bar_width
+
+    def _get_bins(self, bins):
+        """
+        Validates and retrieves the number of bins for plotting.
+
+        Parameters:
+            bins (int or None): The number of bins. If None, defaults to 10.
+
+        Returns:
+            int: The number of bins to use.
+        """
+        if bins is None:
+            return 10
+        if not isinstance(bins, (int)):
+            raise ValueError("bins must be an int.")
+        if bins <= 0:
+            raise ValueError("bins must be greater than 0.")
+        return bins
 
     def _get_colors(self, colors, n):
         """
@@ -111,6 +138,9 @@ class DataFrameVisualizer:
                                                 - y_columns (list of str): List of y-axis columns.
                                                 - colors (list of str, optional): List of colors for the plot.
                                                 - styles (list of str, optional): List of line/marker styles.
+                                                - legend (bool, optional): Whether to show a legend.
+                                                - bar_width (float, optional): Width of the bars for barplot.
+                                                - bins (int, optional): Number of bins for histogram.
         """
         
         # Default figure parameters if none provided
@@ -141,6 +171,7 @@ class DataFrameVisualizer:
             styles = config.get('styles', None)
             legend = config.get('legend')
             bar_width = config.get('bar_width', None)
+            bins = config.get('bins', None)
 
             # Call static plotting method
             if plot_type == 'lineplot':
@@ -149,6 +180,8 @@ class DataFrameVisualizer:
                 self.multiple_variable_scatterplot(x_column=x_column, y_columns=y_columns, ax=ax, colors=colors, legend=legend)
             elif plot_type == 'barplot':
                 self.multiple_variable_barplot(x_column=x_column, y_columns=y_columns, ax=ax, colors=colors, legend=legend, bar_width=bar_width)
+            elif plot_type == 'histogram':
+                self.multiple_variable_histogram(y_columns=y_columns, ax=ax, bins=bins, colors=colors, legend=legend)
 
         plt.show()
 
@@ -291,4 +324,24 @@ class DataFrameVisualizer:
         if legend:
             ax.legend(loc='best')
 
+    def multiple_variable_histogram(self, y_columns, ax, bins=10, colors=None, legend=True):
+        """
+        Creates normalized histograms for the specified columns.
 
+        Parameters:
+            y_columns (list of str): List of column names for y-axis.
+            ax (matplotlib.axes.Axes): Axis object to plot on.
+            bins (int, optional): Number of bins to use in the histogram.
+            colors (list of str, optional): List of colors for the histogram bars.
+            legend (bool, optional): Whether to show a legend.
+        """
+        self._validate_columns(y_columns)
+        colors = self._get_colors(colors, len(y_columns))
+        bins = self._get_bins(bins)
+
+        for y_column, color in zip(y_columns, colors):
+            # Drop null values before plotting
+            self.dataframe[y_column].plot.hist(bins=bins, alpha=0.5, color=color, ax=ax, density=True, label=y_column)
+
+        if legend:
+            ax.legend(loc='best')
