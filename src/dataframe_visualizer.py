@@ -341,7 +341,7 @@ class DataFrameVisualizer:
 
         for y_column, color in zip(y_columns, colors):
             # Drop null values before plotting
-            self.dataframe[y_column].plot.hist(bins=bins, alpha=0.5, color=color, ax=ax, density=True, label=y_column)
+            self.dataframe[y_column].plot.hist(bins=bins, alpha=0.5, color=color, ax=ax, density=True, label=y_column, edgecolor='black')
 
         if legend:
             ax.legend(loc='best')
