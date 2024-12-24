@@ -50,6 +50,13 @@ plot_params = [
         'legend': True, # default True
         'bar_width': 0.8 # default 0.8
     },
+    {
+        'plot_type': 'histogram',
+        'y_columns': ['XXX', 'XXX'],
+        'colors': ['blue', 'orange'], # default None
+        'legend': True, # default True
+        'bins': 10 # default 10
+    },
 ]
 
 figure_params = {
