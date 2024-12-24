@@ -2,10 +2,7 @@
 # Configuration
 # =====================================
 
-import matplotlib.pyplot as plt
 import os
-import pandas as pd
-import seaborn as sns
 import sys
 
 # Move two levels up (to the project root) and append the `src` folder
@@ -76,33 +73,6 @@ v.plot(
     figure_params=figure_params,
     plot_params=plot_params
 )
-
-# =====================================
-# Pivot table
-# =====================================
-
-START_DATE = "'YYYY-MM-DD'"
-END_DATE = "'YYYY-MM-DD'"
-
-df['p_creation_date'] = pd.to_datetime(df['p_creation_date'])
-
-cond1 = df['p_creation_date'] >= pd.to_datetime(START_DATE)
-cond2 = df['p_creation_date'] <= pd.to_datetime(END_DATE)
-
-df_pivoted = df[cond1 & cond2].pivot_table(index=['XXX'], columns=['XXX'], values=['XXX'], aggfunc=['sum'])
-
-# Flatten the multiindex columns 
-df_pivoted.columns = [f'{col[0]}__{col[1]}' for col in df_pivoted.columns]
-df_pivoted = df_pivoted.reset_index()
-
-df_pivoted = df_pivoted.fillna(0)
-
-# =====================================
-# Prints 
-# =====================================
-pd.set_option('display.max_rows', None) # to print all rows
-
-pd.reset_option('display.max_rows') # reset previous configuration
 
 # =====================================
 # Query engines
