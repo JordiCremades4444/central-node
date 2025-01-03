@@ -129,8 +129,11 @@ class DataFrameVisualizer:
                                             - fig_length (int): The length of the figure (default: 10).
                                             - fig_height (int): The height of the figure (default: 6).
                                             - x_rotation (int): Rotation angle for x-axis labels (default: 45).
-                                            - x_limit (tuple): Tuple of (x_min, x_max) for x-axis limits.
-                                            - y_limit (tuple): Tuple of (y_min, y_max) for y-axis limits.
+                                            - x_limits (list of tuple, optional): List of tuples of (x_min, x_max) to set the x-axis limits for each subplot. If None, axis is set automatically.
+                                            - y_limits (list of tuple, optional): List of tuples of (y_min, y_max) to set the y-axis limits for each subplot. If None, axis is set automatically.
+                                            - log_axis (list of str, optional): List of axes to set to logarithmic scale ('x', 'y', or 'both') for each subplot. If None, no log scale is applied.
+                                            - title (str, optional): Title of the figure.
+
             plot_params (list of dict): A list of dictionaries, where each dictionary contains
                                                 parameters for each subplot, including:
                                                 - plot_type (str): Type of plot.
@@ -152,6 +155,7 @@ class DataFrameVisualizer:
                 'x_rotation': 45,
                 'x_limits': None,
                 'y_limits': None,
+                'log_axis': None,
             }
 
         # Create the figure and axes
@@ -185,7 +189,7 @@ class DataFrameVisualizer:
 
         plt.show()
 
-    def create_figure(self, n_plots=1, fig_length=10, fig_height=6, x_rotation=45, share_x=False, share_y=False, x_limits=None, y_limits=None, title=None):
+    def create_figure(self, n_plots=1, fig_length=10, fig_height=6, x_rotation=45, share_x=False, share_y=False, x_limits=None, y_limits=None, title=None, log_axis=None):
         """
         Defines the figure and axes based on the number of plots.
         Sets the axes properties such as labels and x-axis rotation.
@@ -198,9 +202,10 @@ class DataFrameVisualizer:
             x_rotation (int, optional): Rotation angle for x-axis labels (default: 45).
             share_x (bool, optional): If True, subplots share the x-axis (default: False).
             share_y (bool, optional): If True, subplots share the y-axis (default: False).
-            x_limits (tuple, optional): Tuple of (x_min, x_max) to set the x-axis limits. If None, axis is set automatically.
-            y_limits (tuple, optional): Tuple of (y_min, y_max) to set the y-axis limits. If None, axis is set automatically.
+            x_limits (list of tuple, optional): List of tuples of (x_min, x_max) to set the x-axis limits for each subplot. If None, axis is set automatically.
+            y_limits (list of tuple, optional): List of tuples of (y_min, y_max) to set the y-axis limits for each subplot. If None, axis is set automatically.
             title (str, optional): Title of the figure.
+            log_axis (list of str, optional): List of axes to set to logarithmic scale ('x', 'y', or 'both') for each subplot. If None, no log scale is applied.
         """
         self.fig_size = (fig_length, fig_height)
 
@@ -208,11 +213,21 @@ class DataFrameVisualizer:
             fig, ax = plt.subplots(figsize=self.fig_size)
             ax.tick_params(axis='x', rotation=x_rotation)
 
-            # Set axis limits together for x and y
-            if x_limits is not None and len(x_limits) == 2:
-                ax.set_xlim(left=x_limits[0], right=x_limits[1])
-            if y_limits is not None and len(y_limits) == 2:
-                ax.set_ylim(bottom=y_limits[0], top=y_limits[1])
+            # Set axis limits for x and y
+            if x_limits is not None and len(x_limits) == 1:
+                ax.set_xlim(left=x_limits[0][0], right=x_limits[0][1])
+            if y_limits is not None and len(y_limits) == 1:
+                ax.set_ylim(bottom=y_limits[0][0], top=y_limits[0][1])
+
+            # Set logarithmic scale if specified
+            if log_axis is not None and len(log_axis) == 1:
+                if log_axis[0] == 'x':
+                    ax.set_xscale('log')
+                elif log_axis[0] == 'y':
+                    ax.set_yscale('log')
+                elif log_axis[0] == 'both':
+                    ax.set_xscale('log')
+                    ax.set_yscale('log')
 
             if title:
                 fig.text(0.5, 0.95, title, ha='center', fontsize=16)  # Place title at the top of the figure
@@ -223,14 +238,24 @@ class DataFrameVisualizer:
             fig, axs = plt.subplots(n_plots, figsize=self.fig_size, sharex=share_x, sharey=share_y)
             if not isinstance(axs, (list, np.ndarray)):
                 axs = [axs]  # Ensure axs is always a list
-            for ax in axs:
+            for i, ax in enumerate(axs):
                 ax.tick_params(axis='x', rotation=x_rotation)
 
-                # Set axis limits together for x and y
-                if x_limits is not None and len(x_limits) == 2:
-                    ax.set_xlim(left=x_limits[0], right=x_limits[1])
-                if y_limits is not None and len(y_limits) == 2:
-                    ax.set_ylim(bottom=y_limits[0], top=y_limits[1])
+                # Set axis limits for x and y
+                if x_limits is not None and len(x_limits) > i:
+                    ax.set_xlim(left=x_limits[i][0], right=x_limits[i][1])
+                if y_limits is not None and len(y_limits) > i:
+                    ax.set_ylim(bottom=y_limits[i][0], top=y_limits[i][1])
+
+                # Set logarithmic scale if specified
+                if log_axis is not None and len(log_axis) > i:
+                    if log_axis[i] == 'x':
+                        ax.set_xscale('log')
+                    elif log_axis[i] == 'y':
+                        ax.set_yscale('log')
+                    elif log_axis[i] == 'both':
+                        ax.set_xscale('log')
+                        ax.set_yscale('log')
 
             if title:
                 fig.text(0.5, 0.95, title, ha='center', fontsize=16)  # Place title at the top of the figure

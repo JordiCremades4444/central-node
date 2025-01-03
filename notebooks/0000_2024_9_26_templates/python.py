@@ -63,8 +63,9 @@ figure_params = {
     'x_rotation': 45, # default 45
     'share_x': True, # default False
     'share_y': False, # default False
-    'x_limits': None, # default None
-    'y_limits': None, # default None
+    'x_limits': [(0,100),(0,200)], # default None
+    'y_limits': [(0,100),(0,200)], # default None
+    'log_axis': ['x','y','both'], # default None
     'title': 'XXX' # default None
 }
 
