@@ -186,6 +186,8 @@ class DataFrameVisualizer:
                 self.multiple_variable_barplot(x_column=x_column, y_columns=y_columns, ax=ax, colors=colors, legend=legend, bar_width=bar_width)
             elif plot_type == 'histogram':
                 self.multiple_variable_histogram(y_columns=y_columns, ax=ax, bins=bins, colors=colors, legend=legend)
+            elif plot_type == 'boxplot_and_whiskers':
+                self.multiple_variable_box_and_whisker_plot(y_columns=y_columns, ax=ax, colors=colors, legend=legend)
 
         plt.show()
 
@@ -366,7 +368,37 @@ class DataFrameVisualizer:
 
         for y_column, color in zip(y_columns, colors):
             # Drop null values before plotting
-            self.dataframe[y_column].plot.hist(bins=bins, alpha=0.5, color=color, ax=ax, density=True, label=y_column, edgecolor='black')
+            self.dataframe[y_column].dropna().plot.hist(bins=bins, alpha=0.5, color=color, ax=ax, density=True, label=y_column, edgecolor='black')
 
         if legend:
             ax.legend(loc='best')
+
+    def multiple_variable_box_and_whisker_plot(self, y_columns, ax, colors=None, legend=True):
+        """
+        Creates a box and whisker plot for multiple columns.
+
+        Parameters:
+            y_columns (list of str): List of column names for y-axis.
+            ax (matplotlib.axes.Axes): Axis object to plot on.
+            colors (list of str, optional): List of colors for the box plots.
+            legend (bool, optional): Whether to show a legend.
+        """
+        self._validate_columns(y_columns)
+        colors = self._get_colors(colors, len(y_columns))
+
+        for y_column, color in zip(y_columns, colors):
+            # Drop null values before plotting
+            self.dataframe[y_column].dropna().plot.box(
+                boxprops=dict(color=color),
+                whiskerprops=dict(color=color),
+                capprops=dict(color=color),
+                medianprops=dict(color=color),
+                flierprops=dict(markeredgecolor=color),
+                ax=ax,
+                label=y_column,
+                vert=False,
+                widths=0.9
+            )
+
+        if legend:
+            ax.legend(y_columns, loc='best')
