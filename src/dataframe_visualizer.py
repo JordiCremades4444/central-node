@@ -186,6 +186,8 @@ class DataFrameVisualizer:
                 self.multiple_variable_barplot(x_column=x_column, y_columns=y_columns, ax=ax, colors=colors, legend=legend, bar_width=bar_width)
             elif plot_type == 'histogram':
                 self.multiple_variable_histogram(y_columns=y_columns, ax=ax, bins=bins, colors=colors, legend=legend)
+            elif plot_type == 'histogram_acummulated':
+                self.multiple_variable_histogram_acummulated(y_columns=y_columns, ax=ax, bins=bins, colors=colors, legend=legend)
             elif plot_type == 'boxplot_and_whiskers':
                 self.multiple_variable_box_and_whisker_plot(y_columns=y_columns, ax=ax, colors=colors, legend=legend)
 
@@ -369,6 +371,28 @@ class DataFrameVisualizer:
         for y_column, color in zip(y_columns, colors):
             # Drop null values before plotting
             self.dataframe[y_column].dropna().plot.hist(bins=bins, alpha=0.5, color=color, ax=ax, density=True, label=y_column, edgecolor='black')
+
+        if legend:
+            ax.legend(loc='best')
+
+    def multiple_variable_histogram_acummulated(self, y_columns, ax, bins=10, colors=None, legend=True):
+        """
+        Creates normalized accumulated histograms for the specified columns.
+
+        Parameters:
+            y_columns (list of str): List of column names for y-axis.
+            ax (matplotlib.axes.Axes): Axis object to plot on.
+            bins (int, optional): Number of bins to use in the histogram.
+            colors (list of str, optional): List of colors for the histogram bars.
+            legend (bool, optional): Whether to show a legend.
+        """
+        self._validate_columns(y_columns)
+        colors = self._get_colors(colors, len(y_columns))
+        bins = self._get_bins(bins)
+
+        for y_column, color in zip(y_columns, colors):
+            # Drop null values before plotting
+            self.dataframe[y_column].dropna().plot.hist(bins=bins, alpha=0.5, color=color, ax=ax, cumulative=True, density=True, label=y_column, edgecolor='black')
 
         if legend:
             ax.legend(loc='best')

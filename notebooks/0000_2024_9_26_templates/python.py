@@ -54,6 +54,13 @@ plot_params = [
         'legend': True, # default True
         'bins': 10 # default 10
     },
+        {
+        'plot_type': 'histogram_accumulated',
+        'y_columns': ['XXX', 'XXX'],
+        'colors': ['blue', 'orange'], # default None
+        'legend': True, # default True
+        'bins': 10 # default 10
+    },
     {
         # default LB = Q1 - 1.5*IQR, UB = Q3 + 1.5*IQR
         # IQR = Q3 - Q1, Q1 = 25th percentile, Q3 = 75th percentile
