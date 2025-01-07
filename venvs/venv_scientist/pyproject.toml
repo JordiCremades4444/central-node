@@ -10,6 +10,8 @@ python = ">=3.10,<4.0"
 ipykernel = "^6.29.5"
 pandas = "^2.2.3"
 matplotlib = "^3.10.0"
+mysql-connector-python = "^9.1.0"
+trino = "^0.331.0"
 
 
 [build-system]
