@@ -377,13 +377,13 @@ class DataFrameVisualizer:
 
     def multiple_variable_histogram_acummulated(self, y_columns, ax, bins=10, colors=None, legend=True):
         """
-        Creates normalized accumulated histograms for the specified columns.
+        Creates normalized accumulated histograms for the specified columns as line plots.
 
         Parameters:
             y_columns (list of str): List of column names for y-axis.
             ax (matplotlib.axes.Axes): Axis object to plot on.
             bins (int, optional): Number of bins to use in the histogram.
-            colors (list of str, optional): List of colors for the histogram bars.
+            colors (list of str, optional): List of colors for the histogram lines.
             legend (bool, optional): Whether to show a legend.
         """
         self._validate_columns(y_columns)
@@ -392,7 +392,15 @@ class DataFrameVisualizer:
 
         for y_column, color in zip(y_columns, colors):
             # Drop null values before plotting
-            self.dataframe[y_column].dropna().plot.hist(bins=bins, alpha=0.5, color=color, ax=ax, cumulative=True, density=True, label=y_column, edgecolor='black')
+            data = self.dataframe[y_column].dropna()
+            hist, bin_edges = np.histogram(data, bins=bins, density=True)
+            cdf = np.cumsum(hist * np.diff(bin_edges))
+            ax.plot(bin_edges[1:], cdf, color=color, label=y_column)
+
+        # Add horizontal gridlines at 0.25, 0.5, and 0.75
+        ax.axhline(y=0.25, color='gray', linestyle='--', linewidth=0.7)
+        ax.axhline(y=0.5, color='gray', linestyle='--', linewidth=0.7)
+        ax.axhline(y=0.75, color='gray', linestyle='--', linewidth=0.7)
 
         if legend:
             ax.legend(loc='best')
