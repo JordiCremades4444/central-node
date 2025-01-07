@@ -54,8 +54,8 @@ plot_params = [
         'legend': True, # default True
         'bins': 10 # default 10
     },
-        {
-        'plot_type': 'histogram_accumulated',
+    {
+        'plot_type': 'histogram_acummulated',
         'y_columns': ['XXX', 'XXX'],
         'colors': ['blue', 'orange'], # default None
         'legend': True, # default True
