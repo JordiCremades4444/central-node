@@ -40,6 +40,16 @@ with calendar_dates as (select
     where true
 )
 
+,orders_with_pna_instructions as (
+    select 
+        owpi.p_creation_date,
+        owpi.order_id
+    from delta.tech__partner_order_analytics_order_dispatched_with_pna_v0__odp.partner_orders_orderdispatchedtopartnerwithpnaanalyticsevent 
+    inner join calendar_dates
+        on owpi.p_creation_date = calendar_dates.calendar_date
+    where true
+)
+
 ,pna_orders_info as (
     select 
         poi.p_creation_date,
@@ -197,7 +207,7 @@ where true
 group by 1,2,3
 
 -- =====================================
--- Productl level
+-- Product level
 -- =====================================
 
 ,bought_products as (
