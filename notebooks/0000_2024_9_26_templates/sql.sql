@@ -232,6 +232,20 @@ group by 1,2,3
     where true
 )
 
+,products_with_pna_instructions as (
+    select
+        pri.bought_product_id,
+        pri.order_id,
+        pri.instrucion,
+        pri.alternative_products,
+        pri.replacer_bought_product_id,
+        pri.is_replacer_and_alternative_product,
+    from delta.mfc__pna_replacement_instructions__odp.pna_replacement_instructions pri
+    inner join calendar_dates
+        on pri.p_order_activated_date = calendar_dates.calendar_date -- p_order_activated_date is the date when the order was activated
+    where true
+)
+
 -- =====================================
 -- Product user classification
 -- =====================================
