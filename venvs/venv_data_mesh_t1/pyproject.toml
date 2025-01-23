@@ -1,0 +1,18 @@
+[tool.poetry]
+name = "venv-data-mesh-t1"
+version = "0.1.0"
+description = ""
+authors = ["JordiCremades4444 <jordicremadesrosell@gmail.com>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.13"
+
+[[tool.poetry.source]]
+name = "glovo-pypi"
+url = "https://artifactory.glovoint.com/artifactory/api/pypi/glovo-pypi/simple"
+default = true
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
