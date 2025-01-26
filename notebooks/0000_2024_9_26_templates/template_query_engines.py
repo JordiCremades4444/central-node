@@ -16,7 +16,6 @@ q.prepare_query(
     ,params=params
     ,to_load_file=QUERY_NAME
     ,load_from_to_load_file=None
-    
 )
 
 df  = q.query_run_starburst()
